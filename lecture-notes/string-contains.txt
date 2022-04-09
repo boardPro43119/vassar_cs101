@@ -1,0 +1,38 @@
+;(display "
+;Contract:  (string-contains? st1 st2)--> boolean
+;Input:     st1 and st2 are strings
+;Output:    true if st2 is contained in st1, false otherwise
+;\n")
+;
+;(check-expect (string-contains? "hello" "lo") #t)
+;(check-expect (string-contains? "hello" "lot") #f)
+;(check-expect (string-contains? "" "lo") #f)
+
+;; Algorithm
+;; 1: convert st1 to list of chars lst1 
+;; 2. have internal function do recursion over chars in lst1
+;; 3.    name string variables str1 to be string made from lst1
+;; 4.      length of st2 > length of str1 return #f
+;; 5.      string=? (substring str1 0 (string-length st2)) st2 true
+;; 6.      else call internal function on rest lis1
+
+;; Function definition:
+(define string-contains?
+  (lambda (st1 st2)
+    (letrec
+        ((lst1 (string->list st1));; convert st1 to list of chars
+         (s-con?                  ;; function to do list recursion over lst1
+          (lambda (lis1)
+            (let
+                ((str1 (list->string lis1))) ;; convert lis1 to string str1
+              (cond
+                ;; base case 1: if length of st2 > length of str1 return #f
+                [(> (string-length st2) (string-length str1)) false]
+                ;; base case 2: if the substring of str1 from 0 to the length
+                ;; of st2 is equal to st2, return #t
+                [(string=? (substring str1 0 (string-length st2)) st2) true]
+                ;; recursive case: Call s-con? on rest of lis1
+                [else
+                 (s-con? (rest lis1))])))))
+      ;;Initial call to inner function
+      (s-con? lst1))))

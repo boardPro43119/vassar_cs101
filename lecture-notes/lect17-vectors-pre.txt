@@ -1,0 +1,442 @@
+;; CS101 Lecture Notes                    
+;; Spring 2019
+
+
+(require test-engine/racket-tests)
+
+; Vectors
+;
+; VECTORS ARE A DATA STRUCTURE THAT ALLOWS FASTER ACCESS THAN
+; LISTS. IN LANGUAGES LIKE JAVA AND C++ VECTORS ARE CALLED ARRAYS.
+;
+; IMPORTANT:
+; Vectors organize data into a compound data type with constant
+; lookup time.
+;
+; In functional languages, you don't need to define the type of data a
+; vector will hold like you do in Java.
+
+; Lists are slower to access because they can be stored all
+; over in memory, not in a consecutive block. This means that
+; any access to a list element may potentially take time
+; proportional to the length of the list.
+
+; A vector is, in effect, a row of consecutive boxes into which
+; values can be written. Each vector has a fixed number of boxes
+; and that number must be given or be computable when the vector
+; is created. Vectors take advantage of "random access memory",
+; in which any element can be accessed in the same, very small,
+; unit of time.
+
+; Elements in vectors are accessible in "constant time", so the
+; time required to access the first element is the same as the
+; time required to access the 10000th element. 
+
+; Vectors are numbered from 0 to (vector-length - 1), like lists. 
+; This is called "0-based indexing", like strings and lists.
+;
+; One potential disadvantage of vectors, is that the size of
+; the vector (the number of elements stored) must be known when
+; the vector is created, so that each vector has a fixed length.
+; Vectors are convenient for mutating since every element can
+; be accessed quickly.
+;
+; A vector can be created and named in several ways:
+; 
+; 1.  using the make-vector function:
+; 
+;      (define vec (make-vector 4))
+; 
+;     The make-vector function initializes all elements in vec
+;     to 0 if no second argument is given to make-vector.
+;
+;      (make-vector 5 'a) ; makes a vector containing 5 'a symbols 
+;     
+;       
+; 2.  using the vector function (like LIST and STRING functions):
+; 
+;      (define vec1 (vector 1 2 3 4 5))
+;      
+;    The vector function requires you to explicitly give
+;    the values of all the elements in the list when the 
+;    vector is created (like the list or string functions).
+; 
+; 3. using the higher-order build-vector function that 
+;    consumes a number and a single-parameter function
+;    function over numbers.  This function works just like 
+;    the build-list higher-order function but it produces a
+;    vector, not a list.
+;    
+;       (build-vector num add1) => produces a vector with
+;          length num that contains numbers between 1 and 
+;          num.
+;       
+; ---------------------------------------------------------   
+;      
+; After the vector is created, there are 3 common operations on it: 
+
+; 1) you can put a new value into an index (replacing the old value
+;    that was at that index), using VECTOR-SET!
+;    (vector-set! vec pos v)
+
+; 2) you can obtain the current value at any index in constant time,
+;    using VECTOR-REF, (vector-ref vec pos)
+
+; 3) you can obtain the length of the vector using VECTOR-LENGTH, also 
+;    in constant time. (vector-length vec)
+
+
+;; An important difference between vectors and lists is that vectors are
+;; not resizeable like lists are.
+
+
+; There are vector->list and list->vector functions so you can
+; change from one form to another when convenient.
+
+;
+; (1) Putting a new value into an indexed position of an 
+;     existing vector:   
+;
+;     NAME:     VECTOR-SET! 
+;     INPUT:    VEC = vector, POS = position number,
+;               NEW-VALUE = any valid type
+;     OUTPUT:   Change current value at POS of VEC to be NEW-VALUE
+;     This function requires VEC to be created and named in memory
+;
+;(define vecty (make-vector 4)) ;; creates vecty of length 4
+;(check-expect vecty #(0 0 0 0));; displays contents of vecty
+;(vector-set! vecty 2 10)       ;; modifies item in index 2 of vecty
+;(vector-set! vecty 3 14)       ;; modifies item in index 3 of vecty
+;(vector-set! vecty 0 15)       ;; modifies first item in vecty (index 0)
+;(check-expect vecty #(15 0 10 14))        
+
+;Changing the value of an element in a vector:
+ 
+;(vector-set! vecty 0 'see)
+;(vector-set! vecty 1 'spot)
+;(vector-set! vecty 2 'run)
+;(vector-set! vecty 3 '!!!)
+;(check-expect vecty #('see 'spot 'run '!!!))
+
+;
+; NOTE: After resetting the vector contents, the previous check-
+; expect fails.  Why?
+;
+;
+; (2) Obtaining the current value at an indexed position in
+;     a pre-defined vector:
+;
+;     NAME:     VECTOR-REF 
+;     INPUT:    VEC = defined vector, IND = position number
+;     OUTPUT:   Return value at position IND in VEC
+;         
+; To see what is stored at a particular index of a vector, you
+; use the vector-ref function.
+; 
+;
+;(check-expect (vector-ref vecty 0) 'see)
+
+; (3) Obtaining the length of a pre-defined vector:
+;
+;     NAME:     VECTOR-LENGTH 
+;     INPUT:    VEC = vector
+;     OUTPUT:   Return number of items in VEC;
+;
+;(check-expect (vector-length vecty) 4) 
+
+;--------------------------------------------------------------------------
+;
+; Fast operations on lists and vectors:  
+; classify these operations to be (big-oh of 1, or O(1)). Big-oh means
+; "on the order of" as the data size goes to infinity.
+;
+; The constant time (i.e. fast) operations for lists are first, rest, cons, 
+; and empty? (notice that length, ref, and append are not fast for lists).
+; 
+; The constant time (i.e. fast) operations for vectors are vector-ref,
+; vector-set!, and vector-length. 
+;
+; There is no "first", "cons" or "rest" with vectors. Instead of doing 
+; recursion until the vector is empty, you need to do recursion over a 
+; position number, oftentimes ending the recursion when the position number
+; is equal to the length of the vector.
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Using do-times special form to print the contents of a vector:
+(display "
+Contract:     (print-vector vec) -> none
+;;---------------------------------------------------------------
+;;      INPUT:    VEC = vector
+;;      OUTPUT:   NONE
+;; SIDE-EFFECT:   Displays the contents of VEC in the interactions
+;;                window, one element per row\n\n")
+
+;; No check-expects for side-effect printing
+
+;; Use the position in the vector to do the recursion over
+
+(define print-vector
+  (lambda (vec)
+    ;; for i goes from 0 to (vector-length vec) - 1
+    (dotimes (i (vector-length vec))
+             (printf "~a " (vector-ref vec i)))
+    (newline)))
+
+;(newline)
+(printf "Testing PRINT-VECTOR:\n")
+(print-vector (vector 1 3 5 7 9))
+;(newline)
+(print-vector (vector 'a 't 'f 'd 'e 'g))
+;(newline)
+(print-vector (vector))
+
+
+;(display "
+;Contract: (sum-vector vecty) -> number
+;;;---------------------------------------------------------------
+;;;      INPUT:    VECTY = vector of numbers
+;;;      OUTPUT:   Sum of all numbers in VECTY
+;;;\n\n")
+
+; pre-function tests:
+(check-expect (sum-vector (vector 6 7 8)) 21)
+(check-expect (sum-vector (vector)) 0)
+(check-expect (sum-vector (vector 1 1 1 1 1 1)) 6) 
+;
+(define sum-vector
+   (lambda (vecty)
+     (let
+         ((sum 0)
+          (vlen (vector-length vecty)))
+       (dotimes (i vlen)
+                (set! sum (+ sum (vector-ref vecty i))))
+       sum)))
+ 
+(newline)
+(printf "Testing SUM-VECTOR:\n")
+(printf "(sum-vector (vector 1 3 5 7 9)) should be ~a and is ~a\n"
+        25
+        (sum-vector (vector 1 3 5 7 9)))
+(printf "(sum-vector (vector 6 2 3 4)) should be ~a and is ~a\n"
+        15
+        (sum-vector (vector 6 2 3 4)))
+(printf "(sum-vector (vector)) should be ~a and is ~a\n"
+        0
+        (sum-vector (vector)))
+
+
+;(display "
+;; Contract:     (print-in-reverse vecky) -> void
+;;---------------------------------------------------------------
+;;       INPUT:    VECKY = vector of anything
+;;      OUTPUT:    none
+;; SIDE-EFFECT:    Prints out the contents of VECKY
+;;                 in reverse order, one item per line\n\n")
+
+;; No check-expects because of side-effect printing
+
+
+(define print-in-reverse
+  (lambda (vecky)
+    (let
+        ((vlen (sub1 (vector-length vecky))))
+      (dotimes (i (add1 vlen))
+               (printf "~a " (vector-ref vecky (- vlen i)))))))
+
+(newline)
+(printf "Testing PRINT-VECTOR:\n")
+(print-vector (vector 1 3 5 7 9))
+(printf "Testing PRINT-IN-REVERSE:\n")
+(print-in-reverse (vector 1 3 5 7 9))
+(newline)
+
+; Write a function vector-append that works like append, but for vectors.
+; IMPORTANT BECAUSE IT DEMONSTRATES WHAT YOU HAVE TO DO TO MAKE A
+; VECTOR BIGGER - CREATE A NEW ONE AND COPY EVERYTHING FROM SMALLER
+; VECTOR INTO BIGGER USING VECTOR-SET!
+ 
+;(display "
+; Contract: (vector-append v1 v2) => vector
+; Input:    v1 and v2 are vectors containing any data elements 
+; Purpose:  produce a vector containing all elements of v1
+;           followed by all elements of v2.\n\n")
+
+(check-expect (vector-append (vector 1 2 3) (vector 4 5 6)) 
+              (vector 1 2 3 4 5 6))
+(check-expect (vector-append (vector 'a 'z 'p) (vector 'n 'o))
+              (vector 'a 'z 'p 'n 'o))
+
+;; Function definition:
+(define vector-append
+    (lambda (v1 v2)
+      (letrec
+          ;; make a vector of 0s the size of |v1| + |v2| called both
+          ((both (make-vector (+ (vector-length v1) (vector-length v2))))
+           ;; make a helper copy function:
+           (copy (lambda (index)
+                   (dotimes (i (vector-length v1))
+                            (vector-set!
+                             both i (vector-ref v1 i)))
+                   (dotimes (i (vector-length v2))
+                            (vector-set!
+                             both (+ i (vector-length v1)) (vector-ref v2 i)))
+                   both)))
+        (copy 0))))
+
+;(define VECT1 (build-vector 21 add1)); makes a vector with numbers 1...22
+
+;(display "
+; Contract:  (reverse-vec! v) -> vector
+; Input:     v is a vector
+; Purpose    reverse all the elements in vecty by creating
+;            a new vector and filling it with elements from
+;            the input vector (in reverse)\n\n"
+
+;(check-expect (reverse-vec! (vector 3 4 5 6)) (vector 6 5 4 3))
+
+; Function definition:
+;(define reverse-vec!
+;  (lambda (v)
+    ;; make a new vector of 0's to copy into
+ 
+    ;; copy items from vecty into the new vector 
+ 
+    ;; when pos = |vecty| return newvect; base case
+         
+    ;; recursive case: copy item from vecty pos into 
+    ;; |vecty| - pos - 1
+
+              
+;; Write a function called VECTOR-SWAP! to destructively modify a
+;; vector by changing the values in 2 positions:
+;(display "
+;Contract:   (vector-swap! vec p1 p2) -> vector
+;Input:      VEC, a vector containing any data types
+;            P1 and P2 are non-negative integers that are
+;            valid indices of VEC
+;Output:     modified VEC\n\n")
+
+(check-expect (vector-swap! (vector 1 2 3 4 5) 0 4) #(5 2 3 4 1))
+(check-expect (vector-swap! #() 0 4) #())
+(check-expect (vector-swap! (vector 1 2 3 4 5) 1 3) #(1 4 3 2 5))
+
+(define (vector-swap! vec p1 p2)
+  (if (= (vector-length vec) 0) (vector)
+      (let
+          ((temp (vector-ref vec p1)))
+        (vector-set! vec p1 (vector-ref vec p2))
+        (vector-set! vec p2 temp)
+    vec)))
+
+;(display "
+;Contract:   (vector-rev! vec) -> vector
+;Input:      VEC, a vector containing any data types
+;Output:     all elements in VEC, in reverse\n\n")
+
+;(check-expect (vector-rev! (vector 1 2 3 4 5)) #(5 4 3 2 1))
+;(check-expect (vector-rev! (vector 2 3 5 7 8 9)) #(9 8 7 5 3 2))
+
+;(define (vector-rev! vecty)
+;  (let
+;    ((p1 0)
+;     (p2 (sub1 (vector-length vecty))))
+;    (while (< p1 p2)
+;
+;     ;; As p1 and p2 get closer, swap(let
+;          ((temp (vector-ref vec p1)))
+;        (vector-set! vec p1 (vector-ref vec p2))
+;        (vector-set! vec p2 temp) items in p1 and p2
+;     ;; Mutate p1 and p2
+;
+;           
+;    vecty))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;FORMAT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; The format function works just like printf, except that instead of
+;; printing stuff out as a side effect, it generates a string as its
+;; output.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; EVERY-OTHER-ONE-VECK
+;;
+;; Define a function, called print-every-other-one-veck, that takes a
+;; vector as its only input. It should not return any output value. Instead,
+;; it should print out every other element of the given vector. Here is the
+;; contract, followed by some examples:
+;;
+;;  CONTRACT: (every-other-one-vec vec) -> string
+;; --------------------------------------------------------------
+;;  INPUT:   VECK, a vector
+;;  OUTPUT:  string representation of all items in veck
+   
+    
+;;
+;; Here are some examples of the desired behavior:
+;    > (every-other-one-vec #(a b c d e))
+;    "a c e"
+;    > (every-other-one-vec #(a a b b c c d d))
+;    "a b c d"
+;    > (every-other-one-vec #())
+;    ""
+;; Note the subtlety here.  Every element in the string except the
+;; last element has a space after the item.
+
+;; Hint: If the current index is even, then put it
+;; in the output string.  Use a dotimes or while
+
+;;Check-expect tests:
+(check-expect (every-other-one-vec #(42 1 42 2 42 3 42 4 42))
+              "42 42 42 42 42")
+(check-expect (every-other-one-vec #(1)) "1")
+(check-expect (every-other-one-vec #()) "")
+
+(define every-other-one-vec
+  (lambda (veck)
+    (let
+        ;; result accumulator
+        ((acc "")
+         ;; flag for even position (#t) or odd position (#f)
+         (flag #t)
+         ;; save length of veck 
+         (vlen (vector-length veck)))
+      ;; i is counter in dotimes that will go from 0 to (sub1 vlen)
+      (dotimes (i vlen)
+               ;; in the case that this is a even position, append the
+               ;; result accumulator to the string version of the item
+               ;; and set flag to false for next iteration
+               ;; otherwise, just set the flag to true for next iteration
+               (if flag
+                   (set! acc (string-append acc (format "~a " (vector-ref veck i)))))
+               (set! flag (not flag)))
+      ;; return the string of elements excluding the last char in retstr,
+      ;; which must be a space
+      (if (string=? acc "")
+          ""
+          (substring acc 0 (- (string-length acc) 1))))))
+
+(printf "(every-other-one-vec #(a b c d e)) should be ~a and is ~a\n"
+        "a c e"
+        (every-other-one-vec #(a b c d e)))
+(printf "(every-other-one-vec #(1 2 1 2 1 2)) should be ~a and is ~a\n"
+        "1 1 1"
+        (every-other-one-vec #(1 2 1 2 1 2)))
+(printf "(every-other-one-vec #(#t #f #t #f)) should be ~a and is ~a\n"
+        "#t #t"
+        (every-other-one-vec #(#t #f #t #f)))
+
+; Suppose we needed to create a list of boolean #ts. We could
+; use make-vector for that purpose as follows:
+
+
+;(define VBOOL (make-vector...))   
+
+
+
+
+
+(newline)
+(newline)
+(test)

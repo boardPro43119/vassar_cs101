@@ -1,0 +1,290 @@
+;; CMPU101, SPRING 2019
+;; Making our own data structures
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Libraries needed:
+(require test-engine/racket-tests) ;; testing functions,
+(require 2htdp/image)    ;; drawing circles and images,and
+(require 2htdp/universe) ;; driving simulation using big-bang
+                         ;; animation engine
+
+;STRUCTS: Creating new data types.
+;
+; The DEFINE-STRUCT special form is used to create a new data type that is 
+; a container for a finite number of pieces of data. 
+;
+; Syntax:
+;       (define-struct sname (f1 f2 ... fn))
+;
+; Where f1...fn are the fields of the struct.  Define-struct returns void,
+; but has the side-effect of creating 2(n+1) functions in the global
+; environment: a constructor:make-sname, n accessor functions:sname-f1...
+; sname-fn, n mutator functions:set-sname-f1!...set-sname-fn!, and a type-checker:
+; sname?.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SIDE-BAR NOTE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; In Java, the accessor functions are often called "getters", and the
+;;; mutator functions are called "setters". 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; When one of these new data types are defined using define-struct, functions
+; are made by the system to:
+;                1) create (construct) an object of this type,
+;                2) access all fields by name,
+;                3) modify (mutate) fields by name, and
+;                4) type-check data.
+;
+;(empty-scene 400 400)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; POSN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The first struct we'll use is a struct known as a POSN, that holds
+;; 2 numbers that are an (x,y) coordinate pair in the plane. There are 6 
+;; functions associated with posn's:
+
+(define-struct posn (x y))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;NAME:     MAKE-POSN  (constructor)
+;-------------------
+;INPUT:    X and Y are numbers
+;OUTPUT:   none
+;PURPOSE   create a posn struct from x and y
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;NAME:     POSN-X     (accessor of x field)
+;--------------------
+;INPUT:    P, a posn struct
+;OUTPUT:   The X field of a posn, a number
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;NAME:     POSN-Y     (accessor of y field)
+;--------------------
+;INPUT:    P, a posn struct
+;OUTPUT:   The Y field of a posn, a number
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;NAME:     SET-POSN-X!  (mutator of x field)
+;-----------------------
+;INPUT:    P, a posn struct and NUM, a number
+;OUTPUT:   none
+;PURPOSE:  reset the X field of posn P
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;NAME:     SET-POSN-Y!  (mutator of y field)
+;------------------------
+;INPUT:    P, a posn struct and NUM, a number
+;OUTPUT:   none
+;PURPOSE:  reset the Y field of posn P
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;NAME:     POSN?        (type-checker for posn's)
+;----------------------
+;INPUT:    Z, any valid Racket type
+;OUTPUT:   boolean, #t if Z is a posn, #f otherwise
+
+
+
+;;;;;;;;;;;;;;;;;;EXAMPLE FUNCTIONS USING POSN DATA TYPE;;;;;;;;;;;;;;;;;;;;;;;
+;; Ex1: Recall from geometry class that the distance between a point (x,y) in 
+;;      the plane and the origin (0, 0) is calculated as follows: 
+;;
+;;                 (sqrt (+ (sqr x) (sqr y)))
+;; 
+;; Write a function that consumes a posn and calculates its distance from the
+;; origin.
+
+; NAME:  DIST-FROM-ORIGIN
+; ---------------------------
+; INPUT:    P is a posn
+; OUTPUT:   A number, the distance between p and (0,0)
+
+;Pre-function Tests:
+;test on both non-zero and zero x and y
+;(check-expect (dist-from-origin (make-posn 3 4)) 5)
+;test on posn with 0 y coordinate
+;(check-expect (dist-from-origin (make-posn 4 0)) 4)
+;test on posn with 0 x coordinate
+;(check-expect (dist-from-origin (make-posn 0 0)) 0)
+
+;;Function definition: 
+;(define dist-from-origin
+;   (lambda (p)
+
+     ;; use posn-x and posn-y to get the x and y fields out of p
+
+  
+
+;Post-function printfs:
+;(printf "(dist-from-origin (make-posn 3 4)) should be 5 and is ~a\n"
+;        (dist-from-origin (make-posn 3 4)))
+;(printf "(dist-from-origin (make-posn 4 0)) should be 4 and is ~a\n"
+;        (dist-from-origin (make-posn 4 0)))
+;(printf "(dist-from-origin (make-posn 0 0)) should be 6 and is ~a\n\n"
+;        (dist-from-origin (make-posn 0 0)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Ex2: Write a function posn=? that takes 2 posn's as inputs and
+;;      returns true only if the two have equal x and y parts
+
+; NAME:     POSN=?
+; ---------------------------
+; INPUT:    P and Q, two posns
+; OUTPUT:   boolean that is #t if P and Q are equal, #f otherwise
+
+;;PRE-FUNCTION TESTS:
+;(check-expect (posn=? (make-posn 1 2) (make-posn 2 3)) #f)
+;(check-expect (posn=? (make-posn 1 2) (make-posn 1 2)) #t)
+
+;;FUNCTION DEFINITION:
+;(define posn=?
+;   (lambda (p q)
+ 
+
+
+;; Post-function printfs:
+;(printf 
+;    "(posn=? (make-posn 3 4) (make-posn 1 2))
+;    should be false and is ~a\n"
+;    (posn=? (make-posn 3 4) (make-posn 1 2)))
+;(printf 
+;    "(posn=? (make-posn 3 4) (make-posn 3 4))
+;    should be true and is ~a\n\n"
+;    (posn=? (make-posn 3 4) (make-posn 3 4)))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Ex3: Write a function called swap-x-y that takes in a posn
+;; and returns a posn with the coordinates of its input swapped.
+;
+; NAME:     SWAP-XY!
+; ---------------------------
+; INPUT:    P is a posn
+; OUTPUT:   A posn that has the x,y coordinates of P swapped
+
+;; Tests:
+;(check-expect (swap-xy! (make-posn 10 30)) (make-posn 30 10))
+;(check-expect (swap-xy! (make-posn 0 50)) (make-posn 50 0))
+
+;; Function: 
+;(define swap-xy!
+;   (lambda (p)
+
+; Post-function printfs:
+;(printf "(swap-xy! (make-posn 3 4)) is ~a and should be ~a\n"
+;        (swap-xy! (make-posn 3 4)) (make-posn 4 3))
+;(printf "(swap-xy! (make-posn 5 10)) is ~a and should be ~a\n\n"
+;        (swap-xy! (make-posn 5 10)) (make-posn 10 5))
+
+;; Often, a simpler and more functional-friendly way to change
+;; structs is just to make a new one
+;(check-expect (swap-xy (make-posn 10 30)) (make-posn 30 10))
+;(check-expect (swap-xy (make-posn 0 50)) (make-posn 50 0))
+
+;(define (swap-xy p)
+
+
+; Post-function printfs:
+;(printf "(swap-xy (make-posn 3 4)) is ~a and should be ~a\n"
+;        (swap-xy (make-posn 3 4)) (make-posn 4 3))
+;(printf "(swap-xy (make-posn 5 10)) is ~a and should be ~a\n\n"
+;        (swap-xy (make-posn 5 10)) (make-posn 10 5))
+
+
+
+;;----------------------
+;; Ex4: Write a function called separate-xy that takes in a LIST of posns
+;; and returns a list of 2 lists, one containing all the x coodinates, and
+;; the other containing all the y coordinates of posns in the list
+
+;; NAME:       SEPARATE-XY
+;; ------------------------------------------
+;; INPUT:      LOP is a list of posns
+;; OUTPUT:     A list containing: a list of all the x coordinates and a
+;;             list of all the y coordinates.
+
+;; PRE-FUNCTION TESTS:
+;(check-expect 
+;  (separate-xy (list (make-posn 23 22) (make-posn 42 44) (make-posn 61 2)))
+;  (list (list 23 42 61) (list 22 44 2)))
+;(check-expect (separate-xy empty) (list empty empty))
+;(check-expect 
+;  (separate-xy (list (make-posn 6 3) (make-posn 2 4)))
+;  (list (list 6 2) (list 3 4)))
+
+;; FUNCTION DEFINITION (multi-accumulator version): 
+;(define separate-xy
+;   (lambda (lop)
+
+                 
+;;FUNCTION DEFINITION (higher-order function version):
+;(define separate-x-y
+;   (lambda (lop)
+
+
+
+;
+;;; POST-FUNCTION PRINTFS:
+;(printf "(separate-x-y (list (make-posn 3 4) (make-posn 5 7)(make-posn 3 7) (make-posn 3 2))) --> ")
+;(separate-x-y (list (make-posn 3 4) (make-posn 5 7) (make-posn 3 7) (make-posn 3 2)))
+;(newline)
+;(newline)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;NEW;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; The image data type
+
+
+;;;;;;;;;;;;;;;;;;;;; MAKING A SCENE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; We can create "scenes" for animation using a function to define
+;; the "canvas", a display window:
+
+;; CONTRACT: (create-ufo-scene height) --> scene
+;; ------------------------------------------
+;; INPUT:        HEIGHT, a number
+;; OUTPUT:       none
+;; SIDE-EFFECT:  opens a white window with a UFO graphic
+;;               at y-coordinate height
+
+
+;; NAME:      UNDERLAY/XY (built-in function used in create-ufo-scene)
+;; ----------------------------
+;; INPUTS:    I1: an image, X and Y: numbers, and I2: an image
+;; OUTPUT:    an image, where I1 is underneath I2; I1 and I2
+;;            are initially lined up on their upper-left corners,
+;;            and then I2 is shifted to the right by X pixels
+;;            and down by Y pixels.
+
+;(define create-ufo-scene 
+;  (lambda (height)
+;    ;; causes the rectangle to be under a UFO image
+;    (underlay/xy (rectangle 100 400 "solid" "white") 25 height UFO)))
+
+
+;; UFO is a graphics variable that represents a flying saucer (NOT A
+;; FUNCTION, JUST AN IMAGE)
+;(define UFO
+;  (underlay/align "center"
+;                  "center"
+;                  (circle 10 "solid" "green")
+;                  (rectangle 40 4 "solid" "green")))
+
+;; The animate function opens a window and starts a clock that ticks 28 times
+;; per second. In this case, the height of the UFO is changed by the animate
+;; procedure because animate consumes a one-parameter function.
+
+;; Animate is a time-based simulation, which is a series of images.
+
+;; NAME:      ANIMATE
+;;----------------------------
+;; INPUT:        FUNC, a 1-parameter function that consumes a drawing
+;;               function with some changing variable
+;; OUTPUT:       none
+;; SIDE-EFFECT:  Feeds 0... to FUNC and redraws scene using the scene-
+;;               drawing contents of FUNC until you close the window. 
+
+;(animate create-ufo-scene)
+
+
+;(newline)
+;(test)

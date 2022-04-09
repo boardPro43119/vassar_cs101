@@ -1,0 +1,123 @@
+Welcome to DrRacket, version 7.2 [3m].
+Language: Swindle; memory limit: 128 MB.
+
+===================================================
+CMPU-101, Spring 2019
+Homework 2
+Benjamin Prud'homme
+===================================================
+
+Problem 1:
+Contract: (maxx x y) --> number
+Input:    x and y are numbers.
+Output:   A number, the maximum of x and y
+
+Function Tests:
+(check-expect (maxx 2 3) 3)
+(check-expect (maxx 5 1) 5)
+(check-expect (maxx 4 4) 4)
+
+Function definition:
+(define maxx
+  (lambda (x y)
+    (if (> x y) x y)))
+
+
+Problem 2:
+Contract:     (cake-msg p) --> number
+Input:        p is an integer.
+Output:       A number, p multiplied by the number of calories
+              per piece of cake
+Side-effect:  Prints a message that depends on p:
+              when p = 0, prints: I didn't get any cake!
+              when p = 1, prints: I ate 1 piece of cake.
+              when p = 2, prints: I ate 2 pieces of cake.
+              when p = 3, prints: I ate 3 pieces of cake.
+              ...and so on
+
+Constant Definition:
+(define calories-per-piece 300)
+
+Function Tests:
+(check-expect (cake-msg 0) 0)
+(check-expect (cake-msg 1) 300)
+(check-expect (cake-msg 4) 1200)
+
+Function Definition:
+(define cake-msg
+  (lambda (p)
+    (cond
+      [(= p 0) "I didn't get any cake!\n" 0]
+      [(= p 1) "I ate 1 piece of cake.\n" calories-per-piece]
+      [else ("I ate ~a pieces of cake.\n" n) (* calories-per-piece n)])))
+
+
+Problem 3:
+Contract:  (quadrant x y) -> number
+Input:     x and y are two numbers
+Output:    A number specifying the quadrant in which the point lies:
+           when x and y are positive, return 1
+           when x is negative and y is positive, return 2
+           when x is negative and y is negative, return 3
+           when x is positive and y is negative, return 4
+           when either or both x and y are 0, return 0
+
+Constant Definition:
+(define axis 0)
+(define quadrant-i 1)
+(define quadrant-ii 2)
+(define quadrant-iii 3)
+(define quadrant-iv 4)
+
+Function Tests:
+(check-expect (quadrant 0 0) 0)
+(check-expect (quadrant 0 5) 0)
+(check-expect (quadrant -2 0) 0)
+(check-expect (quadrant 1 4) 1)
+(check-expect (quadrant 5 -6) 2)
+(check-expect (quadrant -12 -7) 3)
+(check-expect (quadrant -9 3) 4)
+
+Function Definition:
+(define quadrant
+  (lambda (x y)
+    (cond
+      [(or (= x 0) (= y 0)) axis]
+      [(and (> x 0) (> y 0)) quadrant-i]
+      [(and (< x 0) (> y 0)) quadrant-ii]
+      [(and (< x 0) (< y 0)) quadrant-iii]
+      [else quadrant-iv])))
+Problem 4:
+Contract:  (data-type-of d) -> quoted symbol
+Input:     d is any valid scheme type
+Output:    A quoted symbol (not a string) representing the data type
+           of d, one of:  number, boolean, list, symbol, string, character,
+           or unknown.
+
+Function Tests:
+(check-expect (data-type-of 30) 'number)
+(check-expect (data-type-of #f) 'boolean)
+(check-expect (data-type-of ()) 'list)
+(check-expect (data-type-of 'bp) 'symbol)
+(check-expect (data-type-of "Hello") 'string)
+(check-expect (data-type-of #\A) 'character)
+(check-expect (data-type-of +) 'unknown)
+
+Function Definition:
+(define data-type-of
+  (lambda (input)
+    (cond
+      [(number? input) 'number]
+      [(boolean? input) 'boolean]
+      [(list? input) 'list]
+      [(symbol? input) 'symbol]
+      [(string? input) 'string]
+      [(char? input) 'character]
+      [else 'unknown])))
+
+
+I didn't get any cake!
+I ate 1 piece of cake.
+I ate 4 pieces of cake.
+All 20 tests passed!
+> 

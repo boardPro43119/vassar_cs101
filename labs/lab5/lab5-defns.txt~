@@ -1,0 +1,194 @@
+; Lab 5
+; February 25
+; File: lab5-defns.txt
+
+;; Use Full Swindle for this lab.
+(require test-engine/racket-tests)
+
+;; The file lab5inst.html contains the directions for each
+;; problem. Open that file in a web browser.
+
+(printf "
+-----------------------------------
+CS101-53 Lab 5, Spring 2019
+Benjamin Prud'homme
+-----------------------------------\n")
+; Replace the PLEASE WRITE YOUR NAME HERE" with your first 
+; and last names.
+
+(printf "\n\nPROBLEM 1: LIST-FUNC-VALUES\n")
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:  (list-func-vals func start stop) -> list of any type
+Input:     FUNC is a one-parameter function that consumes a number,
+           START is a non-negative integer starting number, and
+           STOP is a non-negative integer ending number.
+Output:    a list, containing the values produced by FUNC when it
+           is applied to the successive numeric inputs from START
+           to STOP.  Note that the function outputs an empty list
+           if START > STOP, and it outputs a one-element list if
+           START = STOP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\n")
+
+;; Write check-expect statements for the six examples given in the
+;; lab5inst.html file
+(check-expect (list-func-vals add1 1 6) '(2 3 4 5 6 7))
+(check-expect (list-func-vals sub1 -5 0) '(-6 -5 -4 -3 -2 -1))
+(check-expect (list-func-vals abs -4 -4) '(4))
+(check-expect (list-func-vals number->string 1 3) '("1" "2" "3"))
+(check-expect (list-func-vals add1 5 3) '())
+(check-expect (list-func-vals list 9 13) '((9) (10) (11) (12) (13)))
+
+
+(newline)
+;; Display the check-expect statements you wrote above.
+(display "
+Function check-expects:
+(check-expect (list-func-vals add1 1 6) \'(2 3 4 5 6 7))
+(check-expect (list-func-vals sub1 -5 0) '(-6 -5 -4 -3 -2 -1))
+(check-expect (list-func-vals abs -4 -4) '(4))
+(check-expect (list-func-vals number->string 1 3) '(\"1\" \"2\" \"3\"))
+(check-expect (list-func-vals add1 5 3) '())
+(check-expect (list-func-vals list 9 13) '((9) (10) (11) (12) (13)))
+")
+
+
+(newline)
+; Write function definition under this line
+(define list-func-vals
+  (lambda (func start stop)
+     (cond
+       [(> start stop) '()]
+       [else (cons (func start) (list-func-vals func (add1 start) stop))])))
+
+(newline)
+; Display function definition under this line
+(display "Function definition:
+(define list-func-vals
+  (lambda (func start stop)
+     (cond
+       [(> start stop) '()]
+       [else (cons (func start) (list-func-vals (add1 start) stop))])))
+")
+
+
+(newline)
+;; POST-FUNCTION PRINTF'S:
+(printf "(list-func-vals add1 3 5) should be ~a and is ~a\n"
+        '(4 5 6)
+        (list-func-vals add1 3 5))
+(printf "(list-func-vals number->string 1 3) should be ~a and is ~a\n"
+        '("1" "2" "3")
+        (list-func-vals number->string 1 3))
+(printf "(list-func-vals sub1 5 1) should be ~a and is ~a\n"
+        '()
+        (list-func-vals sub1 5 1))
+(printf "(list-func-vals add1 8 5) should be ~a and is ~a\n"
+        '()
+        (list-func-vals add1 8 5))
+(printf "(list-func-vals number->string -2 -2) should be ~a and is ~a\n"
+        '("-2")
+        (list-func-vals number->string -2 -2))
+(printf "(list-func-vals even? 1 5) should be ~a and is ~a\n"
+        '(#f #t #f #t #f)
+        (list-func-vals even? 1 5))
+(newline)
+(newline)
+
+
+
+(display "
+Problem 2(a): N-STARS (from lecture notes on 2/20/19)")
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract: (n-stars n) -> void
+Input:       n is a non-negative integer
+Output:      none
+Side-effect: prints a line of x *'s
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+")
+
+;; Function definition:
+(define n-stars
+  (lambda (n)
+    (cond
+      [(not (positive? n)) (printf "\n") void]
+      [else (printf "*") (n-stars (sub1 n))])))
+
+(display "Function definition:
+(define n-stars
+  (lambda (n)
+    (cond
+      [(not (positive? n)) (printf \"\n\") void]
+      [else (printf \"*\") (n-stars (sub1 n))])))
+")
+(newline)
+
+
+(newline)
+
+(display "(n-stars 10)\n")
+(n-stars 10)
+(display "(n-stars 20)\n")
+(n-stars 20)
+(display "(n-stars 5)\n")
+(n-stars 5)
+(newline)
+
+;; No check-expects possible due to side-effect printing and void
+;; return.
+
+
+
+
+(display "PROBLEM 2(b): PLOTTER
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ Contract:   (plotter func from to) --> void
+ Input:      FUNC is a one-parameter funtion that expects a non-
+             negative numerical input.
+             FROM is a non-negative starting input value (integer)
+             TO is a non-negative input value (integer)
+ Output:     None
+ Side-eff:   Displays the output vaules of FUNC using n-stars for each
+             input in the range, FROM, FROM+1, FROM+2, ..., TO-2, TO-1, TO.
+             For each input value, the corresponding output value is
+             displayed by the appropriate number of asterisks printed on a
+             single line of the Interactions Window.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+")
+(newline)
+
+;; No check-expects possible due to side-effect printing.
+
+; Write function definition under this line
+; Function definition:
+(define plotter
+  (lambda (func start stop)
+    (cond
+      [(> start stop) (printf "\n")]
+      [else (n-stars (func start)) (plotter func (add1 start) stop)])))
+
+
+(newline)
+; Display function definition under this line
+(display "Function definition:
+(define plotter
+  (lambda (func start stop)
+    (cond
+      [(> start stop) (printf \"\n\")]
+      [else (n-stars (func start)) (plotter func (add1 start) stop)])))
+")
+(newline)
+
+;; POST-FUNCTION PRINTF'S:
+(display "(plotter add1 3 5) ==> \n\n") (plotter add1 3 5)
+(newline)        
+(display "(plotter abs -3 3) ==> \n\n") (plotter abs -3 3)
+(newline)
+(display "(plotter sub1 5 1) ==> \n\n") (plotter sub1 5 1)
+
+
+
+(newline)
+(newline)
+(test)

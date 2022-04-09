@@ -1,0 +1,397 @@
+;; CMPU101 Spring 2019
+;; Lab 12 - The Sieve of Eratosthenes
+
+
+(require test-engine/racket-tests)
+
+(printf "
+-----------------------------------
+CS101-53 Lab 12, Spring 2019
+Benjamin Prud'homme
+-----------------------------------
+\n\n")
+; Replace the PLEASE WRITE YOUR NAME HERE" with your first 
+; and last names.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;      THE SIEVE OF ERATOSTHENES (aka, the Collatz sequence)
+;                  
+; For this assignment, you will use 2 of the functions you wrote in hw 7
+; and write 2 more functions to create a program that finds and prints
+; all the prime numbers between 2 and N, a natural number greater than 2, 
+; and that prints the number of primes between 2 and N and a list of these
+; numbers via side-effect printing.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "You wrote this in HW 7:
+;; Contract: (list-true-positions bv) -> list of natural numbers
+;; Input:    bv is a vector of boolean values
+;; PurposE:  to return a list of all the positions in the bv that are 
+;;           true
+\n\n")
+
+;;PRE-FUNCTION TESTS:
+(check-expect (list-true-positions (vector #f #t #t #f)) (list 1 2)) 
+(check-expect (list-true-positions (vector #f #f #f #f)) '())
+(check-expect (list-true-positions (vector #t #t #t #t)) '(0 1 2 3))
+(check-expect (list-true-positions (vector #t #t #t #t)) '(0 1 2 3))
+(check-expect (list-true-positions (vector #t #t #f #t #t)) '(0 1 3 4))
+(check-expect (list-true-positions (vector #t #t #t #t #t #f)) '(0 1 2 3 4))
+
+;;FUNCTION DEFINITION:
+(define list-true-positions
+  (lambda (bv) 
+    (letrec
+        ((len (vector-length bv)) ; name for length of bv
+         (pos 0)                  ; starting pos
+         (acc empty))             ; list for #t positions
+      (while (< pos len)
+             (cond
+               [(vector-ref bv pos)  ;; position pos is true
+                (set! acc (append acc (list pos))) ;; put pos on acc
+                (set! pos (add1 pos))] ;; increment loop counter
+               [else
+                (set! pos (add1 pos))])) ;; increment loop counter
+      acc))) ;; return acc 
+
+
+;;POST-FUNCTION PRINTFS:
+(printf "(list-true-positions (vector true true false true true)) --> \n")
+(list-true-positions (vector true true false true true))
+(printf "Should be '(0 1 3 4)")
+(newline)
+(printf "(list-true-positions (vector false true false true true)) --> \n")
+(list-true-positions (vector false true false true true))
+(printf "Should be '(1 3 4)")
+(newline) (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "You wrote this in HW 7:
+;; Contract: (set-mults-false! pos bv) -> vector of booleans
+;; Input:    pos is a number representing a starting index that is >1, and 
+;;           bv is a vector of booleans
+;; Purpose:  mark all the positions that are multiples of pos to false
+\n\n")
+
+;;PRE-FUNCTION TESTS:
+;;
+;; Test one, with input of 2, the function starts at (2+1) and proceeds by 
+;; marking all positions evenly divisible by 2 as false, positions 4, 6, and 8
+(check-expect 
+ (set-mults-false! 
+  2
+  ;; start looking at position 3
+  (vector #t #t #t #t #t #t #t #t #t))
+ ;; positions 4, 6, and 8 set to #f
+ (vector #t #t #t #t #f #t #f #t #f))
+
+;; Test two, with input of 3, the function starts at (3+1) and proceeds by 
+;; marking all positions evenly divisible by 3 as false, positions 6, 9, and 12
+(check-expect 
+ (set-mults-false! 
+  3 
+  ;; start looking at position 4 for multiples of 3
+  (vector #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t))
+ ;; positions 6, 9, 12, 15 set to #f
+ (vector #t #t #t #t #t #t #f #t #t #f #t #t #f #t #t #f))
+
+;;FUNCTION DEFINITION: 
+(define set-mults-false!
+  (lambda (pos bv)
+    (letrec
+        ;; save length of vector bv
+        ((lngth (vector-length bv))
+         ;; create a local function that uses a position index with initial 
+         ;; value pos + 1
+         (smf
+          (lambda (ctr)
+            (cond
+              ;; base case 1:  if at the end of bv, return the vector
+              [(>= ctr lngth) bv]
+              ;; recursive case 1: if current position of ctr contains true,   
+              ;; check if ctr is evenly divisible by pos...if it is...
+              [(= (remainder ctr pos) 0)
+               ;; ...set the position at ctr to false
+               (vector-set! bv ctr false)
+               (smf (add1 ctr))]
+              ;; recursive case 2: current position of index is false, call   
+              ;; inner function recursively and add 1 to index 
+              [else
+               (smf (add1 ctr))]))))
+      ;; Initial call to inner function
+      (smf (add1 pos)))))
+
+;;POST-FUNCTION PRINTFS:
+(printf "\n(set-mults-false! 2 (vector #t #t #t #t #t #t #t #t #t #t))--> \n")
+(set-mults-false! 2 (vector #t #t #t #t #t #t #t #t #t #t))
+(newline)
+(printf "(set-mults-false! 3 (vector #t #t #t #t #t #t #t #t #t #t))--> \n")
+(set-mults-false! 3 (vector #t #t #t #t #t #t #t #t #t #t))
+(newline) (newline)    
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Problem 1: FIND-NEXT-TRUE
+;  
+;  Write a function called find-next-true that consumes a number, pos, and a
+;  vector, bool-vect, of booleans. The function should start checking bool-vect
+;  for a true value starting at pos and continuing until either a position
+;  holding true is found, in which readcase it returns the position number, or 
+;  until the function has searched to the end of the vector, in which case it
+;  returns -1.
+;
+;  Example tests for this function are given below in check-expects.
+; 
+;  You may use list functions, higher-order functions, and any
+;  other built-in functions in your solution.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 1:
+; Contract: (find-next-true pos bool-vect) -> integer
+; Input:    pos is a non-negative integer and bool-vect is a vector of booleans
+; Purpose:  return the position number of the first #t value in bool-vect,
+;           starting at position pos and continuing until #t is found, when
+;           it returns pos, or until the end of the vector, when it returns -1
+\n\n")
+;
+;;PRE-FUNCTION TESTS:
+;; test on vector of all #t
+(check-expect (find-next-true 3 (make-vector 5 #t)) 3)
+;; test on vector of mixed #t and #f
+(check-expect (find-next-true 4 (vector #t #t #t #t #f #f #f #t #f #f)) 7)
+;; test on empty vector
+(check-expect (find-next-true 3 #()) -1)
+;; test on vector of all #f
+(check-expect (find-next-true 3 (make-vector 5 #f)) -1)
+;
+;; You may choose to write this function recursively or using iteration.
+
+;;FUNCTION DEFINITION (recursive version):
+;(define find-next-true
+  ;(lambda (pos bool-vect)
+     ; Declare a variable equal to length of bool-vect
+     ; and a recursive inner function 
+
+              ; first base case: search has gone through entire vector,
+              ;                  return -1
+            
+              ; second base case: search has found a #t value,
+              ;                   return pos
+             
+              ; recursive case: keep looking for a #t value
+
+      ;; initial call to inner function (if pos is in bool-vect)           
+   ;   (if (> pos blength) 
+          -1
+      ;    (search pos)))))
+
+
+;;FUNCTION DEFINITION (iterative version):
+(define find-next-true  
+  (lambda (pos bool-vect)
+    (let
+        ; name the length of bool-vect
+        ; and a way to stop loop
+        ((bvlen (vector-length bool-vect))
+         (true-found? #f)
+         (i pos))
+      (while (and (not true-found?) (< i bvlen))
+             ; if value at this position is #t
+             (if (boolean=? (vector-ref bool-vect i) #t)
+                 ; stop the loop
+                 (set! true-found? #t)
+                 ; the value at this position is #f, keep going
+                 (set! i (add1 i))))
+      (if true-found?
+          ; if pos >= blength, return -1...no #t found
+          i
+          ; else must have found a #t position at pos
+          -1))))
+
+;;UNCOMMENT AFTER WRITING FUNCTION:
+(printf "(find-next-true 3 (make-vector 5 #t)) should be ~a and is ~a\n"
+        3
+        (find-next-true 3 (make-vector 5 #t)))
+(printf "(find-next-true 4 (vector #t #t #t #t #f #f #f #t #f #f))
+        should be ~a and is ~a\n"
+        7
+        (find-next-true 4 (vector #t #t #t #t #f #f #f #t #f #f)))
+(newline)
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Problem 2: PRINT-ALL
+;
+;  Write a function that consumes a list and that prints every element in the
+;  list, each separated by a space, in one or more printf statements.
+;
+;  THIS FUNCTION IS NECESSARY ONLY BECAUSE, FOR VERY LONG LISTS, OUTPUTTING
+;  THE LIST ALONE PRODUCES ONLY PART OF THE LIST, ENDING WITH ... (elipsis)
+; 
+;  No pre-function tests possible due to side effect printing.
+;
+;  (print-all '(2 3 5 7 11)) => 2 3 5 7 11 printed as side-effect.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 2:
+; Contract: (print-all listy) -> void; side-effect printing
+; Input:    listy is a list of numbers
+; Purpose:  Prints every number in listy to the standard output
+\n\n")
+;
+;;NO PRE-FUNCTION TESTS POSSIBLE DUE TO SIDE-EFFECT PRINTING
+;
+;;FUNCTION DEFINITION:
+(define print-all
+  (lambda (listy)
+    (cond
+      ; if listy is empty, add a newline and stop
+      [(empty? listy) (newline)]
+      ; otherwise, printf the first of listy and then call function 
+      ; recursively on rest of listy.
+      [else
+       (printf "~a " (first listy))
+       (print-all (rest listy))])))    
+
+;  EXTRA CHALLENGE:  LIMIT THE LENGTH OF EACH PRINTED LINE TO 15 AND PRINT
+;  EACH NUMBER SO THAT THE NUMBERS IN EACH COLUMN ARE RIGHT-JUSTIFIED. YOU
+;  ARE *NOT* REQUIRED TO DO THIS.
+
+;;POST-FUNCTION TESTS:
+(print-all '(1 3 5 7 11 13))
+(print-all empty)
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Problem 3: FIND-PRIMES  (READ THIS PART CAREFULLY!!)
+;
+; Write the interactive function find-primes that  
+; 
+;     i) asks the user to enter a positive natural number >= 2,  
+;        storing the number in a locally declared constant, N,
+;
+;    ii) creates a vector of booleans of size N + 1, containing  
+;        #t in positions 0 to N, storing the vector in a local 
+;        variable called booly.
+;
+;   iii) Either recursively:
+;        a) calls set-mults-false!, passing in booly and (pos+1),
+;           where pos is initially 2.
+;
+;        b) calls find-next-true, passing in (pos+1) and booly.
+;
+;        c) repeats steps a) and b) until pos = N or until the input to 
+;           find-next-true on (pos+1) and booly is -1.
+;
+;        Or, iteratively:
+;        a) while pos < N and find-next-true (pos+1) booly does not return -1
+;
+;        b) sets the multiples of pos in booly to #f
+;
+;        c) increments pos
+;
+;    iv) Lastly, calls list-true-positions inside a call to a function print-all
+;
+;   EXTRA CHALLENGE:  LIMIT THE LENGTH OF EACH PRINTED LINE TO 15 AND PRINT
+;   EACH NUMBER SO THAT THE NUMBERS IN EACH COLUMN ARE RIGHT-JUSTIFIED. YOU
+;   ARE *NOT* REQUIRED TO DO THIS.
+;
+;   Sample executions run in the Interactions Window are shown below (READ
+;   CAREFULLY!):
+;
+;
+;> (find-primes)
+;  
+;  Hello, enter a positive natural number n that is greater than 2 and I will
+;  tell you all the prime numbers between 2 and n:
+;
+;  20
+;
+;  The 8 prime numbers between 2 and 20 are:
+;
+;   2    3    5    7   11   13   17   19
+;
+;
+;> (find-primes)
+;
+;  Hello, enter a positive natural number n that is greater than 2 and I will
+;  tell you all the prime numbers between 2 and n:
+;
+;  73
+;
+;  The 21 prime numbers between 2 and 73 are:
+;
+;   2    3    5    7   11   13   17   19   23   29   31   37   41   43   47 
+;  53   59   61   67   71   73 
+;
+;
+;  When I ran this function on an input of 1000, here are the prime numbers
+;  that were printed (at least I think these are all primes!):
+;
+; The 168 prime numbers between 2 and 1000 are:
+;
+;   2    3    5    7   11   13   17   19   23   29   31   37   41   43   47 
+;  53   59   61   67   71   73   79   83   89   97  101  103  107  109  113 
+; 127  131  137  139  149  151  157  163  167  173  179  181  191  193  197 
+; 199  211  223  227  229  233  239  241  251  257  263  269  271  277  281 
+; 283  293  307  311  313  317  331  337  347  349  353  359  367  373  379 
+; 383  389  397  401  409  419  421  431  433  439  443  449  457  461  463 
+; 467  479  487  491  499  503  509  521  523  541  547  557  563  569  571 
+; 577  587  593  599  601  607  613  617  619  631  641  643  647  653  659 
+; 661  673  677  683  691  701  709  719  727  733  739  743  751  757  761 
+; 769  773  787  797  809  811  821  823  827  829  839  853  857  859  863 
+; 877  881  883  887  907  911  919  929  937  941  947  953  967  971  977 
+; 983  991  997 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 3: 
+; Contract: (find-primes) -> void; side-effect printing
+; Input:    none
+; Purpose:  Finds and prints all the prime numbers between 2 and N for some N
+;           >= 2 entered by the user
+\n\n")
+
+;;FUNCTION DEFINITION: (iterative algorithm)
+(define find-primes
+  (lambda ()
+;   ;;  asks the user to enter a positive natural number >= 2, (given below)  
+    (printf "~%Hello, enter a positive natural number n that is greater ")
+    (printf "than 2 and I will tell you~%all the prime numbers between ")
+    (printf "2 and n:~%~%")
+;
+;   ;;  store the number in a locally declared constant, N,
+;   ;;  and name variables needed for iteration
+    (let*
+        ((n (read))
+         ;; make a vector of booleans, booly, of size N + 1
+         (booly (make-vector (add1 n) #t))
+         (pos 2))
+      ;; set the 0 and 1 positions of booly to #f
+      (vector-set! booly 0 #f)
+      (vector-set! booly 1 #f)
+      ;; iterate over booly while pos < N and find-next-true does not return -1
+      (while (and (< pos n) (not (eq? (find-next-true (add1 pos) booly) -1)))
+
+             ;; mutate booly to be result of set-mults-false! pos booly
+             (set! booly (set-mults-false! pos booly))
+             (set! pos (add1 pos)))
+      
+      ;; name the list of true positions and the length of this list
+      (let*
+          ((primes (list-true-positions booly))
+           (num-primes (length primes)))
+        ;; print the count of primes between 2 and N and then print all
+        ;; the primes between 2 and N using print-all
+        (printf "The ~a prime numbers between 2 and ~a are:\n" num-primes n)
+        (print-all primes))
+      (newline))))
+
+
+;; Call to interactive function (uncomment when function written):
+(find-primes)
+
+(test)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; When you are finished, get a coach or professor to check your solutions and
+;; then submit your lab12 folder from your cs101/labs directory:
+;;                      submit101 w-lab12 lab12

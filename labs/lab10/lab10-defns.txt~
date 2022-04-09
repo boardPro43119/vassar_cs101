@@ -1,0 +1,362 @@
+;; Lab 10 - Writing functions with vectors 
+;; CS101 Spring 2019
+
+(require test-engine/racket-tests)
+
+;; In this lab, you will write iterative functions that use loops
+;; instead of recursion or higher order functions.
+
+;; 1. Set up a new directory called lab10 in your cs101/labs directory.
+;; 2. Save this file in the lab10 directory.
+;; 3. When finished, get a checked off and submit your solution:
+;;           submit101 w-lab10 lab10
+;;
+
+
+(display "
+-----------------------------------
+Lab 10, Spring 2019
+CS101-53 
+Benjamin Prud'homme
+-----------------------------------\n")
+
+;; The contracts are given for you. The check-expects and printfs are
+;; also written for you!
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 1:  FETCH-RANDOM-ELEMENT
+;;
+;; Define a function, called fetch-random-element, that satisfies the
+;; following contract:
+(display "PROBLEM 1:
+    ;;  CONTRACT:  (fetch-random-element vecky) -> data item
+    ;; -----------------------------------------------------------
+    ;;  INPUT:   VECKY, a vector of any valid data
+    ;;  OUTPUT:  One of the elements of VECKY, chosen at random
+    ;;  SIDE-EFFECT:  Prints out the index, VECKY, and the item at
+    ;;                the index
+\n\n")
+
+;; Here are some examples of the desired behavior:
+;  > (fetch-random-element #(a b c d e f g h))
+;  Item at position 3 in #(a b c d e f g h) is d.
+;  d
+;  > (fetch-random-element #(a b c d e f g h))
+;  Item at position 6 in #(a b c d e f g h) is g.
+;  g
+;  > (fetch-random-element #(a b c d e f g h))
+;  Item at position 7 in #(a b c d e f g h) is h.
+;  h
+;  > (fetch-random-element #(a b c d e f g h))
+;  Item at position 0 in #(a b c d e f g h) is a.
+;  a
+
+;;
+;; Hint: Use the built-in vector-length, random and vector-ref functions.
+
+;; No pre-function tests possible due to random selection of vector
+;; content
+
+;; Function definition:
+(define fetch-random-element
+  (lambda (vecky) 
+    (let*
+        ;; save values of the random index (index) and the value
+        ;; at that index (val)
+        ((index (random (vector-length vecky)))
+         (val (vector-ref vecky index)))
+      ;; print results as side-effect
+      (printf "Item at position ~a in ~a is ~a.\n" index vecky val)
+      ;; return val
+      val)))
+
+;; Function tests: (uncomment after function is written)
+(printf "(fetch-random-element #(iger tay am scray)) ==> ~a\n"
+        (fetch-random-element #(iger tay am scray)))
+(printf "(fetch-random-element #(ay may ittle lay itty kay)) ==> ~a\n"
+        (fetch-random-element #(ay may ittle lay itty kay)))
+(newline)
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 2: PRINT-EVERY-ODD-ONE
+;;
+;; Define a function, called print-every-odd-one, that takes a vector
+;; as its only input. It should not return any output value. Instead,
+;; it should print out every odd element of the given vector. Here is the
+;; contract, followed by some examples:
+;;
+(display "PROBLEM 2:
+    ;;  CONTRACT: (print-every-odd-one veck) -> none
+    ;; --------------------------------------------------------------
+    ;;  INPUT:   VECK, a vector
+    ;;  OUTPUT:  none
+    ;;  SIDE-EFFECT printing only of every odd element in veck
+\n\n")
+    
+;;
+;; Here are some examples of the desired behavior:
+;    > (print-every-odd-one #(a b c d e))
+;    b d
+;    > (print-every-odd-one #(a a b b c c d d))
+;    a b c d
+;    > (print-every-odd-one #(0 1 2 3 4 5 6 7))
+;    1 3 5 7
+;
+;; Hint: Use the odd? function. If the current index is odd, then print out
+;; the corresponding element. Use a while or dotimes.
+
+;; Alternate hint: Use a boolean flag that is #f initially and is toggled
+;; to #t every other iteration
+
+
+;; No pre-function tests possible due to side-effect printing
+
+;; Function Definition:
+(define print-every-odd-one
+  (lambda (veck)
+    (dotimes
+     (i (vector-length veck))
+     (if (odd? i) (printf "~a " (vector-ref veck i))))))
+
+;; Function tests: uncomment when done with function
+(printf "(print-every-odd-one #(0 1 2 3 4 5 6 7 8)) ==> ")
+(print-every-odd-one #(0 1 2 3 4 5 6 7 8))
+(newline)
+(printf "(print-every-odd-one #(10 9 8 7 6 5 4 3 2 1)) ==> ")
+(print-every-odd-one #(10 9 8 7 6 5 4 3 2 1))
+(newline)
+(printf "(print-every-odd-one #(10 9)) ==> ")
+(print-every-odd-one #(10 9))
+(newline)
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 3: VECTOR-SWAP!
+;;
+;; Define a function, called vector-swap!, that destructively modifies
+;; a vector by swapping two of its elements as specified by the
+;; following contract:
+(display "PROBLEM 3:
+       ;;  CONTRACT: (vector-swap! vecky i j) -> vector
+       ;; ----------------------------------------------
+       ;;  INPUTS:  VECKY, a vector
+       ;;           I, J, two numerical indices
+       ;;  OUTPUT:  VECKY with positions I and J swapped
+       ;;  SIDE EFFECT:  Destructively swaps the contents of VECKY
+       ;;                at positions I and J.
+\n\n")
+;Here are some examples of its use:
+;       > (define vecky (vector ’a ’b ’c ’d ’e ’f))
+;       > vecky
+;       #(a b c d e f)
+;       > (vector-swap! vecky 1 4)
+;       > vecky
+;       #(a e c d b f)
+;       > (vector-swap! vecky 0 4)
+;       > vecky
+;       #(b e c d a f)
+
+(define vec (vector 1 2 3 4 5 6))
+(check-expect (vector-swap! vec 0 5) #(6 2 3 4 5 1))
+(check-expect (vector-swap! vec 1 3) #(6 4 3 2 5 1))
+(check-expect (vector-swap! vec 2 4) #(6 4 5 2 3 1))
+
+;; Function definition:
+(define vector-swap!
+  (lambda (vec p1 p2)
+    (let
+        ;; define a variable temp to hold item at position p1
+        ;; in vec
+        ((temp (vector-ref vec p1)))
+      ;; replace the value in p1 with that in p2
+      (vector-set! vec p1 (vector-ref vec p2))
+      ;; replace the value in p2 with saved value from p1
+      (vector-set! vec p2 temp)
+      ;; return modified vec
+      vec)))
+
+;; Function tests: uncomment when done with function
+(printf "(vector-swap! (vector 1 2 3 4 5) 2 4) should be ~a and is ~a\n"
+        #(1 2 5 4 3)
+        (vector-swap! (vector 1 2 3 4 5) 2 4))
+(printf "(vector-swap! (vector 1 2 3 4 5) 0 4) should be ~a and is ~a\n"
+        #(5 2 3 4 1)
+        (vector-swap! (vector 1 2 3 4 5) 0 4))
+(newline)
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 4: VECTOR-ADD!
+;;
+;; Define a destructive function, called vector-add!, that 
+;; consumes two vectors of numbers of the same length and returns a
+;; vector that is the result of adding the numbers in corresponding
+;; positions of the incoming vectors. This function should destructively
+;; modify one of the incoming vectors instead of creating a new one.
+;;
+(display "PROBLEM 4:
+       ;;  CONTRACT: (vector-add! vec1 vec2) -> vector
+       ;; ----------------------------------------------------
+       ;;  INPUTS:  VEC1 and VEC2, vectors of numbers that are
+       ;;           the same length
+       ;;  OUTPUT:  a vector of numbers representing the addition of
+       ;;           numbers in VEC1 and VEC2
+\n\n")
+       
+
+;Here are some examples of its use:
+;       > (vector-add! (vector 1 2 3 4) #(2 4 6 8))
+;       > #(3 6 9 12)
+;       > (vector-add! (vector 12 38 40) #(10 10 10))
+;       > #(22 48 50)
+
+(check-expect (vector-add! (vector 1 2 3 4) #(2 4 6 8))
+              #(3 6 9 12))
+(check-expect (vector-add! (vector -1 -2 -3 -4) #(1 2 3 4))
+              #(0 0 0 0))
+(check-expect (vector-add! (vector) #())
+              #())
+
+;; Function Definition:
+(define vector-add!
+  (lambda (vec1 vec2)
+    ;; for i = 0 to len1 - 1, set position i of vec1 to be the
+    ;; the item at position i in vec1 + item at position
+    ;; i in vec2
+    (dotimes
+     (i (vector-length vec1))
+      ;; destructively modifying vec1
+     (vector-set! vec1 i (+ (vector-ref vec1 i) (vector-ref vec2 i))))
+    vec1))
+
+;; Function tests: uncomment when done with function
+(printf "(vector-add! (vector 1 2 3 4) #(2 4 6 8)) should be ~a and is ~a\n"
+        #(3 6 9 12)
+        (vector-add! (vector 1 2 3 4) #(2 4 6 8)))
+(printf "(vector-add! (vector 1 2 3 4) #(-2 -3 -4 -5)) should be ~a and is ~a\n"
+        #(-1 -1 -1 -1)
+        (vector-add! (vector 1 2 3 4) #(-2 -3 -4 -5)))
+(newline)
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 5: VECTOR-ADD
+;;
+;; Define a non-destructive function, called vector-add, that 
+;; consumes two vectors of numbers of the same length and returns a
+;; vector that is the result of adding the numbers in corresponding
+;; positions of the incoming vectors. This function should create a
+;; new vector rather than destructively modifying the input.
+;;
+(display "PROBLEM 5:
+       ;;  CONTRACT: (vector-add vec1 vec2) -> vector
+       ;; ----------------------------------------------------
+       ;;  INPUTS:  VEC1 and VEC2, vectors of numbers that are
+       ;;           the same length
+       ;;  OUTPUT:  a vector of numbers representing the addition of
+       ;;           numbers in VEC1 and VEC2
+\n\n")
+       
+
+;Here are some examples of its use:
+;       > (vector-add (vector 1 2 3 4) #(2 4 6 8))
+;       > #(3 6 9 12)
+;       > (vector-add (vector 12 38 40) #(10 10 10))
+;       > #(22 48 50)
+
+(check-expect (vector-add (vector 1 2 3 4) #(2 4 6 8))
+              #(3 6 9 12))
+(check-expect (vector-add (vector -1 -2 -3 -4) #(1 2 3 4))
+              #(0 0 0 0))
+(check-expect (vector-add (vector) #())
+              #())
+
+;;Function definition:
+(define vector-add
+  (lambda (vec1 vec2)
+    (let
+        ;; make a new vector, added, the same length as vec1 and vec1
+        ;; to hold the sum of the vectors at position i
+        ((added (make-vector (vector-length vec1))))
+      ;; for i = 0 to vlen-1, add item at position i in vec1 and
+      ;; item at position 1 in vec2 and put result in added position i
+      (dotimes
+       (i (vector-length added))
+       (vector-set! added i (+ (vector-ref vec1 i) (vector-ref vec2 i))))
+      ;; return result of adding
+      added)))
+
+;; Function tests: uncomment when done with function
+(printf "(vector-add (vector 1 2 3 4) #(2 4 6 8)) should be ~a and is ~a\n"
+        #(3 6 9 12)
+        (vector-add (vector 1 2 3 4) #(2 4 6 8)))
+(printf "(vector-add (vector 1 2 3 4) #(-2 -3 -4 -5)) should be ~a and is ~a\n"
+        #(-1 -1 -1 -1)
+        (vector-add (vector 1 2 3 4) #(-2 -3 -4 -5)))
+(newline)
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 6: STAGGER
+;;
+;; Define a destructive function, called stagger, that consumes 
+;; two vectors of numbers of the same length and returns a
+;; vector that is twice as long as the input vectors and which
+;; contains items from the input vectors as follows:
+;; if v1 = #(1 1 1 1) and v2 = #(2 2 2 2), the the output should
+;; be #(1 2 1 2 1 2 1 2)
+;;
+(display "PROBLEM 6:
+       ;;  CONTRACT: (stagger vec1 vec2) -> vector
+       ;; ----------------------------------------------------
+       ;;  INPUTS:  VEC1 and VEC2, vectors of numbers that are
+       ;;           the same length
+       ;;  OUTPUT:  a vector of numbers representing holding
+       ;;           items of VEC1 interspersed with items of VEC2
+\n\n")
+       
+
+;Here are some examples of its use:
+;       > (stagger (vector 1 2 3 4) #(2 4 6 8))
+;       > #(1 2 2 4 3 6 4 8)
+;       > (stagger (vector 12 38 40) #(10 10 10))
+;       > #(12 10 38 10 40 10)
+
+;(check-expect (stagger (vector 1 2 3 4) #(2 4 6 8))
+;              #(1 2 2 4 3 6 4 8))
+;(check-expect (stagger (vector -1 -2 -3 -4) #(1 2 3 4))
+;              #(-1 1 -2 2 -3 3 -4 4))
+;(check-expect (stagger (vector) #())
+;              #())
+
+;(define stagger
+;  (lambda (vec1 vec2)
+    ;; save the length of one of the incoming vectors
+   
+           ;; make a new vector twice the size of the input vectors
+
+               ;; from i = 0 to vlen - 1
+               ;; set position in combined vector position 2 * 0 to hold
+               ;; item in vec1, position 0 and set position in combined 
+               ;; vector position 1 + (2 * 0) to hold item 0 in vec2,
+               ;; and so on.
+               
+
+;; Function tests: uncomment when done with function
+;(printf "(stagger (vector 1 2 3 4) #(2 4 6 8)) should be ~a and is ~a\n"
+;        #(1 2 2 4 3 6 4 8)
+;        (stagger (vector 1 2 3 4) #(2 4 6 8)))
+;(printf "(stagger (vector 1 2 3 4) #(-2 -3 -4 -5)) should be ~a and is ~a\n"
+;        #(1 -2 2 -3 3 -4 4 -5)
+;        (stagger (vector 1 2 3 4) #(-2 -3 -4 -5)))
+
+(newline)
+(newline)
+(test)

@@ -1,0 +1,101 @@
+Welcome to DrRacket, version 7.2 [3m].
+Language: Swindle; memory limit: 128 MB.
+
+===================================================
+CMPU-101, Spring 2019
+Homework 3
+Benjamin Prud'homme
+===================================================
+
+Problem 1: GEOM-SUM
+
+Contract: (geom-sum x n) --> number
+Input:    x is a positive integer, n is a nonnegative integer
+Output:   The geometric sum computed using the formula x^0 + x^1 + ... + x^n
+
+Function Tests:
+(check-expect (geom-sum 2 3) 15)
+(check-expect (geom-sum 2 0) 1)
+(check-expect (geom-sum 3 3) 40)
+(check-expect (geom-sum 1 3) 4)
+
+
+Function Definition:
+(define geom-sum
+  (lambda (x n)
+    (cond
+      ;; base case: if n=0, then add x^0=1 to the sum and stop here
+      [(= n 0) 1]
+      ;; recursive case: if n>0, add x^n and move on to the previous term
+      ;; (with n reduced by 1)
+      [else (+ (expt x n) (geom-sum x (sub1 n)))])))
+
+(geom-sum 2 3) should be 15 and is 15
+(geom-sum 2 0) should be 1 and is 1
+(geom-sum 3 3) should be 40 and is 40
+(geom-sum 1 3) should be 4 and is 4
+
+
+Problem 2: ALT-SUM
+
+Contract: (alt-sum n) --> number
+Input:    n is a positive integer
+Output:   The alternating sum computed using the formula
+          1 - 1/2 + 1/3 - 1/4 + ... +/- 1/n
+
+Function Tests:
+(check-within (alt-sum 1) 1 0.1)
+(check-within (alt-sum 2) 0.5 0.1)
+(check-within (alt-sum 3) 0.83 0.1)
+(check-within (alt-sum 4) 0.58 0.1)
+
+
+Function Definition:
+(define alt-sum
+  (lambda (n)
+    (cond
+      ;; base case: if n=1, then add 1 to the sum and stop here
+      [(= n 1) 1]
+      ;; recursive case 1: if n>1 and n is odd, add 1/n and move on to the
+      ;; previous term (with n reduced by 1)
+      [(odd? n) (+ (alt-sum (sub1 n))  (/ 1.0 n))]
+      ;; recursive case 2: if n>1 and n is even, subtract 1/n instead
+      [else (- (alt-sum (sub1 n)) (/ 1.0 n))])))
+
+(alt-sum 1) should be 1 and is 1
+(alt-sum 2) should be 0.5 and is 0.5
+(alt-sum 3) should be approximately 0.83 and is 0.8333333333333333
+(alt-sum 4) should be approximately 0.58 and is 0.5833333333333333
+
+
+Problem 3: LIST-DOWN-TO-ZERO
+
+Contract:     (list-down-to-zero n) --> number
+Input:        n is a nonnegative integer
+Output:       a list consisting of the integers from n down to 0
+
+
+Function Tests:
+(check-expect (list-down-to-zero 5) '(5 4 3 2 1 0))
+(check-expect (list-down-to-zero 22)
+              '(22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0))
+(check-expect (list-down-to-zero 0) '(0))
+
+
+Function Definition:
+(define list-down-to-zero
+  (lambda (n)
+    (cond
+      ;; base case: if n=0, end the list here
+      [(= n 0) (cons 0 '())]
+      ;; recursive case: if n>0, continue the list with the next-lower integer
+      [else (cons n (list-down-to-zero (sub1 n)))])))
+
+(list-down-to-zero 5) should be (5 4 3 2 1 0) and is (5 4 3 2 1 0)
+(list-down-to-zero 22) should be (22 21 20 ... 3 2 1 0) and is 
+(22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 ...)
+(list-down-to-zero 0) should be (0) and is (0)
+
+
+All 11 tests passed!
+> 

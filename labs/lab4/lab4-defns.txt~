@@ -1,0 +1,176 @@
+; CS101-53, Spring 2019
+; Lab 4
+; February 18th
+
+(require test-engine/racket-tests)
+
+(printf "
+-----------------------------------
+CS101-53 Lab 4, Spring 2019
+Benjamin Prud'homme
+-----------------------------------\n")
+; Replace the PLEASE WRITE YOUR NAME HERE" with your first 
+; and last names.
+
+; First, create a new subdirectory in your cs101/labs
+; directory: cd cs101/labs
+;            mkdir lab4
+
+; Set your language to Swindle. The instructions for this
+; lab are given in the lab4inst.html file that you should
+; open in a browser.
+; 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PROBLEM 1:  CHOP-AT-NAN (recursive function)
+;;
+;;   The function contract, input, and output are given for you
+;;   in this file. You should read over each part to make
+;;   sure you understand the problem. 
+;;
+;;   The printf tests are given for you. You should uncomment these
+;;   tests after you write the function.
+;;              
+(printf "\n\nPROBLEM 1: CHOP-AT-NAN\n\n")
+(display "
+Contract:  (chop-at-nan lis) -> list of numbers
+Input:     lis is a list of any data types
+Output:    a list that contains only the elements that occur
+           before the first non-number.\n\n")
+
+;;Function tests: Write the check-expects below this line       
+(check-expect (chop-at-nan '(1 2 3 5)) '(1 2 3 5)) 
+(check-expect (chop-at-nan '(42 abc 5)) '(42))
+(check-expect (chop-at-nan '(abc def g)) '()) 
+(check-expect (chop-at-nan '(1 2 3 4 "5")) '(1 2 3 4)) 
+(check-expect (chop-at-nan '()) '())
+
+; Write function definition under this line
+;Function definition:
+(define chop-at-nan
+  (lambda (loa)
+    (cond
+      [(or (empty? loa) (not (number? (first loa)))) '()]
+      [else (cons (first loa) (chop-at-nan (rest loa)))])))
+
+; Post-function displays/tests (uncomment when your function is written):
+(newline) (newline)
+(printf "(chop-at-nan '(1 2 3 0 4 5 6)) should be ~a and is ~a\n\n"
+        '(1 2 3 0 4 5 6)
+        (chop-at-nan '(1 2 3 0 4 5 6)))
+(printf "(chop-at-nan '(1 2 a b 3 c d) should be ~a and is ~a\n\n"
+        '(1 2)
+        (chop-at-nan '(1 2 a b 3 d c)))
+(printf "(chop-at-nan '(0 a b c)) should be ~a and is ~a\n\n"
+        '(0)
+        (chop-at-nan '(0 a b c)))
+(newline)(newline)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                PROBLEM 2:  ALL-LARGER-THAN-X?
+;;
+;;   The function contract, input, and purpose are given for you.
+;;   You should read over each part to make sure you understand
+;;   the problem. 
+;;
+;;   The pre- and post-function tests are given for you.  You
+;;   should uncomment these tests after you write the function.
+;;             
+(printf "\n\nPROBLEM 2: ALL-LARGER-THAN-X?\n\n")
+(display "
+;   Contract:  (all-larger-than-x? lis x) -> boolean
+;   Input:     lis is a list of numbers and x is a number
+;   Purpose:   return #t if lis contains only numbers > x, 
+;              and #f otherwise\n\n")
+
+;;Function tests (uncomment after writing function):       
+(check-expect (all-larger-than-x? '(1 2 3 5) 7) false)         
+(check-expect (all-larger-than-x? '(4 5) 4.5) false)        
+(check-expect (all-larger-than-x? '(1 2 3) 0) true)          
+(check-expect (all-larger-than-x? '(0.00000013 42) 0) true)                  
+(check-expect (all-larger-than-x? '() 8) false)          
+
+
+; Function definition: DEFINE FUNCTION HERE
+(define all-larger-than-x?
+  (lambda (lon num)
+    (cond
+      [(or (empty? lon) (<= (first lon) num)) #f]
+      [(empty? (rest lon)) #t]
+      [else (all-larger-than-x? (rest lon) num)])))
+
+; Function display: DISPLAY FUNCTION DEFINITION HERE
+(display "
+Function Definition:
+(define all-larger-than-x?
+  (lambda (lon num)
+    (cond
+      [(or (empty? lon) (<= (first lon) num)) #f]
+      [(empty? (rest lon)) #t]
+      [else (all-larger-than-x? (rest lon) num)])))
+")
+
+; Post-function printf statements (uncomment when your function is written):
+(newline) (newline)
+(printf "(all-larger-than-x? empty 8) should be ~a and is ~a\n\n"
+        false
+        (all-larger-than-x? empty 8))
+(printf "(all-larger-than-x? '(9 34 2 24) 1) should be ~a and is ~a\n\n"
+        true
+        (all-larger-than-x? '(9 34 2 24) 1))
+(printf "(all-larger-than-x? '(4 5) 4.5) should be ~a and is ~a\n\n"
+        false
+        (all-larger-than-x? '(4 5) 4.5))
+(printf "(all-larger-than-x? '(1000000000) 100000) should be ~a and is ~a\n\n"
+        true
+        (all-larger-than-x? '(1000000000) 100000))
+
+
+(printf "\n\nPROBLEM 3: list-random\n\n")
+(display "
+Contract:  (list-random range len) -> list of numbers
+Input:     range is a positive integer and len is an integer
+           in the range 0...n
+Output:    a list that contains len elements between 1 and
+           range\n\n")
+
+; No check-expects possible because of random number
+; generation.
+
+; Write function definition under this line
+; Function definition:
+(define list-random
+  (lambda (range len)
+    (cond
+      [(= len 0) '()]
+      [else (cons (+ (random range) 1) (list-random range (- len 1)))])))
+
+; Display function definition under this line
+(display "
+Function definition:
+(define list-random
+  (lambda (range len)
+    (cond
+      [(= len 0) '()]
+      [else (cons (+ (random range) 1) (list-random range (- len 1)))])))
+")
+
+
+;; POST-FUNCTION PRINTF'S:
+(printf "(list-random 5 9) ==> ~a\n"
+        (list-random 5 9))
+(printf "(list-random 10 10) ==> ~a\n"
+        (list-random 10 10))
+(printf "(list-random 100 20) ==> ~a\n"
+        (list-random 100 20))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; When you are finished with this lab, show it to your professor or 
+;; a coach and get checked off on the lab roster. Follow directions
+;; in the lab4inst.html file to submit the lab.
+(newline)
+(newline)
+(test)
+
+

@@ -1,0 +1,277 @@
+;;; =======================================================
+;;;  CMPU-101, Spring 2019
+;;;  Lab 3 
+;;; =======================================================
+(require test-engine/racket-tests)
+
+;; Set your language to Swindle for this lab.
+
+(display "\n         CS101 Lab 3, Spring 2019")
+(display "\n       PLEASE WRITE YOUR NAME HERE\n\n")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PROBLEM 1: interest-rate
+;;
+;;  Write a function that consumes a number representing an
+;;  amount deposited in a bank and that produces the variable 
+;;  interest rates as follows:
+;;
+;;  The bank pays 4% for deposits of up to $1000 (inclusive),
+;;  4.5%  for deposits of between $1001 and $5000 (inclusive), 
+;;  and 5%  for deposits of strictly more than $5000.
+;;
+;;               4% if deposit <= 1000, 
+;;               4.5% if 1001 <= deposit <= 5000,
+;;               and 5% if deposit > 5000
+;;
+;; Example executions are shown below:
+;;     > (interest-rate 456)
+;;     18.24
+;;     > (interest-rate 1001)
+;;     45.05
+;;     > (interest-rate 5531)
+;;     276.55
+;;
+;; Write test cases for the function in the form of check-within
+;; statements. Think about how you can make sure the function returns
+;; values with at most 2 places after the decimal point (look up the
+;; ceiling function).
+
+(display "Problem 1: interest-rate")
+(display "
+Contract: (interest-rate deposit) --> number
+Input:    deposit: positive number
+Output:   A number, the annual return rate on given deposit:
+               4% if deposit <= 1000, 
+               4.5% if 1001 <= deposit <= 5000,
+               and 5% if deposit > 5000
+")
+;; DEFINE CONSTANTS FOR LOW-YIELD = 4%, MID-YIELD = 4.5% AND
+;; HIGH-YIELD = 5% and LOW-CUTOFF = 1000 and MID-CUTOFF = 5000
+;; BELOW THIS LINE.
+(define low-yield 0.04)
+(define mid-yield 0.045)
+(define high-yield 0.05)
+(define low-cutoff 1000)
+(define high-cutoff 5000)
+
+
+;; DISPLAY THE DEFINITIONS YOU WROTE ABOVE BELOW THIS LINE
+(display "
+Constant definitions:
+(define low-yield 0.04)
+(define mid-yield 0.045)
+(define high-yield 0.05)
+(define low-cutoff 1000)
+(define high-cutoff 5000)
+")
+
+
+;; WRITE THE CHECK-WITHIN STATEMENTS BELOW THIS LINE
+(check-within (interest-rate 456) 18 0.5)
+(check-within (interest-rate 1000) 40 0.5)
+(check-within (interest-rate 1001) 45 0.5)
+(check-within (interest-rate 5000) 225 0.5)
+(check-within (interest-rate 5001) 250 0.5)
+(check-within (interest-rate 5531) 277 0.5)
+
+
+;; DISPLAY THE CHECK-WITHIN STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Tests:
+(check-within (interest-rate 456) 18 0.5)
+(check-within (interest-rate 1000) 40 0.5)
+(check-within (interest-rate 1001) 45 0.5)
+(check-within (interest-rate 5000) 225 0.5)
+(check-within (interest-rate 5001) 250 0.5)
+(check-within (interest-rate 5531) 277 0.5)
+")
+
+;; DEFINE THE INTEREST-RATE FUNCTION BELOW THIS LINE
+(define interest-rate
+  (lambda (deposit)
+    (cond
+      [(<= deposit low-cutoff) (* deposit low-yield)]
+      [(<= deposit high-cutoff) (* deposit mid-yield)]
+      [else (* deposit high-yield)])))
+
+
+;; DISPLAY THE INTEREST-RATE FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function definition:
+(define interest-rate
+  (lambda (deposit)
+    (cond
+      [(<= deposit low-cutoff) (* deposit low-yield)]
+      [(<= deposit high-cutoff) (* deposit mid-yield)]
+      [else (* deposit high-yield)])))
+")
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PROBLEM 2: annual-yield
+;;
+;; Develop the function annual-yield that consumes a deposit
+;; amount and produces the actual amount of annual-yield the 
+;; money will earn in a year, given the interest rates 
+;; specified in Problem 1.
+
+;; USE THE INTEREST-RATE FUNCTION AS AN AUXILLIARY (HELPER) 
+;; FUNCTION IN YOUR SOLUTION TO THIS PROBLEM.
+
+;; Example executions are shown below:
+;;     > (annual-yield 335)
+;;     384.4
+;;     > (annual-yield 3335)
+;;     3485.08
+;;     > (annual-yield 5531)
+;;     5807.55
+
+;; Write test cases for the function in the form of check-expect or
+;; check-within statements. Your tests should cover every branch of
+;; execution.
+
+(display "Problem 2: annual-yield")
+(display "
+Contract: (annual-yield deposit) --> number
+Input:    deposit: positive number
+Output:   A number, the amount accrued for 1 year on given deposit
+")
+;; WRITE THE CHECK-EXPECT OR CHECK-WITHIN STATEMENTS BELOW THIS LINE
+(check-within (annual-yield 335) 348 0.5)
+(check-within (annual-yield 1000) 1040 0.5)
+(check-within (annual-yield 1001) 1046 0.5)
+(check-within (annual-yield 3335) 3485 0.5)
+(check-within (annual-yield 5000) 5225 0.5)
+(check-within (annual-yield 5001) 5251 0.5)
+(check-within (annual-yield 5531) 5808 0.5)
+
+
+;; DISPLAY THE CHECK-EXPECT OR CHECK-WITHIN STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Tests:
+(check-within (annual-yield 335) 348 0.5)
+(check-within (annual-yield 1000) 1040 0.5)
+(check-within (annual-yield 1001) 1046 0.5)
+(check-within (annual-yield 3335) 3485 0.5)
+(check-within (annual-yield 5000) 5225 0.5)
+(check-within (annual-yield 5001) 5251 0.5)
+(check-within (annual-yield 5531) 5808 0.5)
+")
+
+;; DEFINE THE annual-yield FUNCTION BELOW THIS LINE
+(define annual-yield
+  (lambda (deposit) (+ deposit (interest-rate deposit))))
+
+
+;; DISPLAY THE annual-yield FUNCTION INSIDE THE CALL TO THE display
+;; FUNCTION BELOW
+(display "
+Function definition:
+(define annual-yield
+  (lambda (deposit) (+ deposit (interest-rate deposit))))
+")
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;
+;; Recall that functions that consume anything and determine
+;; whether the value belongs to a class of data are called
+;; TYPE-CHECKING PREDICATES. We can make use of these 
+;; functions in the problem below. Examples of type-checker
+;; predicates are string?, number?, boolean?, etc.
+;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PROBLEM 3: convert-input-to-number  
+;;
+;;  Create a function that converts its input x (whatever type it is) 
+;;  to a number. 
+;;          for a string, it returns the length of the string;  
+;;          for a number, 
+;;             if the number is positive it returns the  
+;;                value of the number decremented by 1, 
+;;             if the number is non-positive (0 or negative), 
+;;                it returns the number unchanged; 
+;;          for the boolean true it returns 10;
+;;          for the boolean false it returns 20;
+;;          and for any other type, it returns 42.
+;;
+;; When writing this function, keep in mind that the result returned by
+;; a cond clause may itself be a cond or an if. 
+;;
+;; Write test cases for the function in the form of check-expect statements
+;; (but if you input a real number, use a check-within statement instead.
+;; Your tests should cover every branch of execution.
+
+(display "Problem 3: convert-input-to-number")
+(display "
+Contract: (convert-input-to-number x) --> number
+Input:    x is any valid type of Scheme data
+Output:   A number:
+          for a string, it returns the length of the string;  
+          for a number, 
+             if the number is positive it returns the  
+                value of the number decremented by 1, 
+             if the number is non-positive (0 or negative), 
+                it returns the number unchanged; 
+          for the boolean true it returns 10;
+          for the boolean false it returns 20;
+          and for any other type, it returns 42.
+")
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+(check-expect (convert-input-to-number #f) 20)
+(check-within (convert-input-to-number 3335) 3334 0.1)
+(check-within (convert-input-to-number -5531) -5531 0.1)
+(check-expect (convert-input-to-number "Vassar College") 14)
+(check-expect (convert-input-to-number #t) 10)
+(check-expect (convert-input-to-number +) 42)
+
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Tests:
+(check-expect (convert-input-to-number #f) 20)
+(check-within (convert-input-to-number 3335) 3334)
+(check-within (convert-input-to-number -5531) -5531)
+(check-expect (convert-input-to-number \"Vassar College\") 14)
+(check-expect (convert-input-to-number #t) 10)
+(check-expect (convert-input-to-number +) 42)
+")
+
+;; DEFINE THE CONVERT-INPUT-TO-NUMBER FUNCTION BELOW THIS LINE
+(define convert-input-to-number
+  (lambda (x)
+    (cond
+      [(string? x) (string-length x)]
+      [(number? x)
+       (if (positive? x) (- x 1) x)]
+      [(boolean? x)
+       (if x 10 20)]
+      [else 42])))
+
+
+;; DISPLAY THE CONVERT-INPUT-TO-NUMBER FUNCTION INSIDE THE CALL TO
+;; THE display FUNCTION BELOW
+(display "
+Function definition:
+(define convert-input-to-number
+  (lambda (x)
+    (cond
+      [(string? x) (string-length x)]
+      [(number? x)
+       (if (positive? x) (- x 1) x)]
+      [(boolean? x)
+       (if x 10 20)]
+      [else 42])))
+")
+
+(newline)
+(newline)
+(test)

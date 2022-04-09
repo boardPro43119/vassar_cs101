@@ -1,0 +1,88 @@
+(require test-engine/racket-tests)
+
+(check-expect (sum-square-diff (vector) 17) 0)
+(check-expect (sum-square-diff (vector) 0) 0)
+(check-expect (sum-square-diff (vector 2 4 6) 4) 8)
+(check-expect (sum-square-diff (vector 1 2) -1) 13)
+
+(define sum-square-diff
+  (lambda (vnum k)
+    (let
+        ((vlist (vector->list vnum)))
+      (apply + (map (lambda (x) (* (- x k) (- x k))) vlist)))))
+
+
+
+(check-expect (sum-square-diff-2 (vector) 17) 0)
+(check-expect (sum-square-diff-2 (vector) 0) 0)
+(check-expect (sum-square-diff-2 (vector 2 4 6) 4) 8)
+(check-expect (sum-square-diff-2 (vector 1 2) -1) 13)
+
+(define sum-square-diff-2
+  (lambda (vnum k)
+    (letrec
+        ((acc 0)
+         (cont 0)
+         (sqr
+          (lambda (y) (* y y))))
+      (while (< acc (vector-length vnum))
+             (set! cont (+ cont (sqr (- (vector-ref vnum acc) k))))
+             (set! acc (add1 acc)))
+      cont)))
+
+(check-expect (sum-square-diff-3 (vector) 17) 0)
+(check-expect (sum-square-diff-3 (vector) 0) 0)
+(check-expect (sum-square-diff-3 (vector 2 4 6) 4) 8)
+(check-expect (sum-square-diff-3 (vector 1 2) -1) 13)
+
+(define sum-square-diff-3
+  (lambda (vnum k)
+    (letrec
+        ((vlen (vector-length vnum))
+         (cont 0)
+         (sqr
+          (lambda (y) (* y y))))
+      (dotimes (i vlen)
+             (set! cont (+ cont (sqr (- (vector-ref vnum i) k)))))
+      cont)))
+
+(check-expect (stutter "horse") "hhoorrssee")
+(check-expect (stutter "") "")
+(check-expect (stutter "cat") "ccaatt")
+
+(define stutter
+  (lambda (str)
+    (letrec
+        ;; List of characters in str
+        ((charlist (string->list str))
+         ;; Accumulator
+         (result '())
+         ;; Internal function to repeat every character twice in output
+         (stut
+          (lambda (chars)
+            (cond
+              [(empty? chars) (list->string (reverse result))]
+              [else
+               (set! result (cons (first chars) (cons (first chars) result)))
+               (stut (rest chars))]))))
+      (stut charlist))))
+
+(check-expect (stutter-vec "horse") "hhoorrssee")
+(check-expect (stutter-vec "") "")
+(check-expect (stutter-vec "cat") "ccaatt")
+
+(define stutter-vec
+  (lambda (str)
+    (let*
+        ;; List of characters in str
+        ((charlist (string->list str))
+         (charvec (list->vector charlist))
+         ;; Accumulator
+         (result (make-vector (* (vector-length charvec) 2))))
+      (dotimes (i (vector-length charvec))
+               (vector-set! result (* 2 i) (vector-ref charvec i))
+               (vector-set! result (add1 (* 2 i)) (vector-ref charvec i)))
+      (list->string (vector->list result)))))
+
+
+(test)

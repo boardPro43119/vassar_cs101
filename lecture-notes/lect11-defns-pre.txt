@@ -1,0 +1,419 @@
+;; Monday, March 25th, 2019
+;; Lecture notes
+
+(require test-engine/racket-tests) ;; for check-expects
+
+
+;; Define a function that satisfies the following contract:
+
+;; The order of the elements in the output list does not really
+;; matter, but try to preserve as much of the order of elements
+;; in listy as possible.
+;;
+;; Here are some examples:
+;
+;    > (remove-dupes '(1 1 1 1 1))
+;    (1)
+;    > (remove-dupes '(a b r a c a d a b r a))
+;    (a b r c d)
+;    > (remove-dupes '(1 2 3 1 2 3 1 2 3 4 3 2 1))
+;    (1 2 3 4)
+;
+;; Requirement: Use an internal helper function with accumulator that
+;; satisfies the contract.
+
+;; Hint:In the recursive case, use the built-in member function to decide
+;; whether or not (first listy) already appears in the accumulator. Use
+;; that information to decide whether or not to add it to the accumulator.
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Contract: (remove-dupes listy) --> list of any types
+;;  Input:    LISTY, a list of any types
+;;  Output:   A list that contains the same elements as
+;;            LISTY, but without any duplicates.\n\n")
+
+(check-expect (remove-dupes (list 1 2 3 1 2 3 1 2 3 4 3 2 1)) (list 1 2 3 4))
+(check-expect (remove-dupes '(a b r a c a d a b r a)) '(a b r c d))
+(check-expect (remove-dupes '(a b a c a d a e)) '(a b c d e))
+(check-expect (remove-dupes '(b b b b b)) '(b))
+(check-expect (remove-dupes '()) '())
+
+;; Function definition:
+(define remove-dupes
+  (lambda (listy)
+    (letrec
+        ;; define section
+        ((rem-dupe
+          (lambda (lsty acc)
+            (cond
+              [(empty? lsty) (reverse acc)]
+              [(member (first lsty) acc) (rem-dupe (rest lsty) acc)]
+              [else (rem-dupe (rest lsty) (cons (first lsty) acc))]))))
+      (rem-dupe listy '()))))
+
+(display "
+;; Function definition:
+;(define remove-dupes
+(define remove-dupes
+  (lambda (listy)
+    (letrec
+        ;; define section
+        ((rem-dupe
+          (lambda (lsty acc)
+            (cond
+              [(empty? lsty) acc]
+              [(member (first lsty) acc) (rem-dupe (rest lsty) acc)]
+              [else (rem-dupe (rest lsty) (cons (first lsty) acc))])))))))
+
+\n")
+
+
+(newline)
+(printf "Testing function remove-dupes:\n")
+(printf "(remove-dupes (list 1 2 3 1 2 3 1 2 3 4 3 2 1)): ")
+(remove-dupes (list 1 2 3 1 2 3 1 2 3 4 3 2 1))
+(newline)
+(printf "(remove-dupes '(a b a d b g h a b c)): ")
+(remove-dupes '(a b a d b g h a b c))
+(newline)
+(printf "(remove-dupes (list 1 2 3)): ")
+(remove-dupes (list 1 2 3))
+
+
+;; Writing functions that work on 2 lists of the same length
+;; simultaneously. Try to write necessary helper functions as internal
+;; functions.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Suppose you have a list of dice, such as (6 3 6 2 6). And suppose that
+;; in the game you are playing, you are allowed to re-roll some of the dice.
+;; If you are trying to get as many sixes as possible, you might want to
+;; re-roll the three and the two, but not the sixes. For this problem, you
+;; will define a function called roll-some that will allow you to do this.
+;;
+;; For the above example, the function call would look like this:
+
+;;    (roll-some '(6 3 6 2 6) '(#f #t #f #t #f))
+
+;; where each #f means "Don’t roll that die!"; and each #t means "Do roll 
+;; that die!"
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract: (roll-some '(6 3 6 2 6) '(#f #t #f #t #f)) --> list of 5 numbers
+Input:    LISTN, a list of numbers between 1 and 6, and
+          LISTB, a list of booleans the same length as LISTN
+Output:   A list of numbers between 1 and 6 such that each
+          number in the same position as #t has been re-rolled
+          and each number in the same position as #f has not.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+; No check-expects possible due to random number generation.
+
+(define DICE-SIDES 6)
+
+;; Function definition:
+(define roll-some
+  (lambda (listn listb)
+    (letrec
+         ;; first internal function to do a simulated roll of 2 6-sided dice
+        ((roll6
+          (lambda () (add1 (random DICE-SIDES))))
+         ;; second internal function to roll only the numbers in listn that
+         ;; correspond to #t in listb)
+         (roll-som
+          (lambda (lon lob acc)
+            (cond
+              [(empty? lon)
+               (reverse acc)]
+              [(first lob)
+               (roll-som (rest lon) (rest lob) (cons (roll6) acc))]
+              [else
+               (roll-som (rest lon) (rest lob) (cons (first lon) acc))]))))
+      ;; initial call to internal function
+      (roll-som listn listb '()))))
+                      
+
+(newline)
+(printf "Testing ROLL-SOME:\n")
+(printf "(roll-some '(6 3 6 2 6) '(#f #t #f #t #f)))\n")
+(roll-some '(6 3 6 2 6) '(#f #t #f #t #f))
+(printf "(roll-some '(6 6 6 6 6) '(#t #t #t #t #t))\n")
+(roll-some '(6 6 6 6 6) '(#t #t #t #t #t))
+(printf "(roll-some '(1 2 3 3 5) '(#t #t #f #f #t))\n")
+(roll-some '(1 2 3 3 5) '(#t #t #f #f #t))
+
+
+;; DEEP LISTS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The syntax of Scheme expressions allows lists that contain
+;; other lists as elements. Lists may contain lists that
+;; contain other lists that contain other lists, and so on, to
+;; any desired depth.
+;;
+;; * A list that has at least one element that is itself a list
+;;   is called a hierarchical (or deep, or nested) list.
+;; * A list that does not contain any lists as elements is
+;;   called a flat list.
+;;
+;; Forexample, the expression '(x (2 (3) 2) #t) denotes a hierarchical
+;; list whose three elements are: the symbol x, the subsidiary list
+;; '(2 (3) 2), and the boolean #t. Recursively processing hierarchical
+;; lists is frequently only slightly more complicated than recursively
+;; processing flat lists. When recursively processing the items
+;; in a deep list, it often happens that one need only insert one extra
+;; case to handle the possibility that the item currently under
+;; consideration is itself a list.
+
+;; The convention is that all functions that process hierarchical lists
+;; have names ending in *
+
+;; The function below allows the detection of a list without going
+;; through the whole list...this makes it faster than using list?, which
+;; must traverse the whole list to determine if it is a "proper" list.
+
+(display "Helper function:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:  (q-list? datum) --> boolean
+Input:     DATUM, anything
+Output:    #t if DATUM is either () or a con'sd list;
+           #f otherwise.
+\n\n")
+
+(check-expect (q-list? '()) #t)
+(check-expect (q-list? 89) #f)
+(check-expect (q-list? '(42)) #t)
+
+(define q-list?
+  (lambda (datum)
+    (or (null? datum) (cons? datum))))
+
+(printf "(q-list? '(4 56)) should be #t and is ~a\n\n"
+        (q-list? '(4 56)))
+(printf "(q-list? #t) should be #f and is ~a\n\n"
+        (q-list? #t))
+(printf "(q-list? 'a) should be #f and is ~a\n\n"
+        (q-list? 'a))
+
+;; Write a function to sum all the numbers in a possibly deep list 
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:     (sum* lst) --> a number
+Input:        A list of numbers, LST
+Output:       The sum of number in LST\n\n")
+
+(check-expect (sum* '(1 2 (3 4) 5)) 15)
+(check-expect (sum* '(1 (1))) 2)
+(check-expect (sum* '()) 0)
+
+;; Function definition (comments included):
+(define sum*
+  (lambda (lst)
+    (cond
+      ;; base case 1: empty list
+      [(empty? lst) 0]
+      ;;******************************************
+      ;; recursive case 1: first of lst is a list,
+      ;; so call sum* on both first and rest of lst.
+      [(q-list? (first lst))
+       (+ (sum* (first lst)) (sum* (rest lst)))]
+      ;;******************************************
+      ;; recursive case 2: first of lst is a number,
+      ;; so add it on to a recursive call to sum* on 
+      ;; the rest of lst
+      [else (+ (first lst) (sum* (rest lst)))])))
+
+      
+
+      
+
+      
+       
+
+
+(newline)
+(printf "Testing sum*:\n")
+(printf "(sum* '(((1) 2) (3) 4)) should be ~a and is ~a\n"
+        10
+        (sum* '(((1) 2) (3) 4)))
+(printf "(sum* '(()(3 3 (5))())) should be ~a and is ~a\n"
+        11
+        (sum* '(()(3 3 (5))())))
+(printf "(sum* '((1 2 (3)) 4 (5 1))) should be ~a and is ~a\n"
+        16
+        (sum* '((1 2 (3)) 4 (5 1))))
+(printf "(sum* '(9 8 7 6)) should be ~a and is ~a\n"
+        30
+        (sum* '(9 8 7 6)))
+
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:     (flatten* listy) --> a flat list of any type
+Input:        A list of any type, listy
+Output:       listy as a flat list\n\n")
+
+
+(check-expect (flatten* '(1 (2) 3 (4 5))) '(1 2 3 4 5))
+(check-expect (flatten* '((4 2) 3 (x (y)))) '(4 2 3 x y))
+
+;; Function definition
+(define flatten*
+  (lambda (listy)
+    (cond
+      ;; base case: empty list input, return empty list
+      [(empty? listy) '()]
+      ;; rec. case 1: if first is a list, call function recursively on
+      ;; both first and rest of listy
+      [(q-list? (first listy))
+       (append (flatten* (first listy)) (flatten* (rest listy)))]
+      ;; rec. case 2: if first is not a list so it must be a number.
+      ;; Cons first on to recursive call on rest.
+      [else (cons (first listy) (flatten* (rest listy)))])))
+
+(newline)
+(printf "Testing the flatten* function:\n")
+(printf "(flatten* '((4 2) 3 (x (y)))) should be ~a and is ~a\n"
+        '(4 2 3 x y)
+        (flatten* '((4 2) 3 (x (y)))))
+(printf "(flatten* '(1 (2 (3) 4) 5)) should be ~a and is ~a\n"
+        '(1 2 3 4 5)
+        (flatten* '(1 (2 (3) 4) 5)))
+(printf "(flatten* '(((3)))) should be ~a and is ~a\n\n"
+        '(3)
+        (flatten* '(((3)))))
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:     (depth* listy) --> a number
+Input:        A list of any type, listy
+Output:       nested list depth of listy\n\n")
+
+;(check-expect (depth* '(1 2 3 4)) 1)
+;(check-expect (depth* '(1 (2 (3) 2) 1)) 3)
+;(check-expect (depth* '((((42))))) 4)
+;(check-expect (depth* '((()))) 3)
+;(check-expect (depth* '() 1)
+
+;; Function definition: 
+;(define depth*
+
+          
+  
+
+;(newline)         
+;(printf "Testing the depth* function:\n")
+;(printf "(depth* '((4 2) 3 (x (y))))) should be ~a and is ~a\n"
+;        3
+;        (depth* '((4 2) 3 (x (y)))))
+;(printf "(depth* '(1 (2 (3) 4) 5))) should be ~a and is ~a\n"
+;        3
+;        (depth* '(1 (2 (3) 4) 5)))
+;(printf "(depth* '((((42))))) should be ~a and is ~a\n"
+;        4
+;        (depth* '(1 (2 (3) 4) 5)))
+;(printf "(depth* '())) should be ~a and is ~a\n"
+;        1
+;        (depth* '()))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Saving values read from the user is a common use of the let
+;; statement inside functions.
+
+;; The READ function:
+;; 
+;; read is a zero-parameter function that displays a box for entry in
+;; the interactions window and returns whatever is typed (up to, but
+;; not including the first space) as a quoted symbol, a number, or a 
+;; string (the string must be typed in quotations or it is read as a
+;; quoted symbol). If you read a value as a symbol and you need to use
+;; a string, use the symbol->string function to convert the input.
+;; 
+;(read)
+;;
+;; read is used to get input from the user of the program and should 
+;; always be used AFTER a printf that prompts the user for the data
+;; to be read.  For example, the following function prompts the user 
+;; for their full name and age and then prints the information to the
+;; interactions window.
+;;
+;; All sequences of characters that are not numbers, booleans, or strings
+;; are read as quoted symbols.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:  (get-name-and-age) --> none, only side-effect printing
+Input:   none except that read from user
+Output:  none
+Side-effect: Prints the name and age entered\n\n")
+
+; Pre-function tests: Not possible due to uncertainty of user input
+
+; Function definition:
+(define get-name-and-age
+  (lambda () 
+    ;; prompt the user for their full name
+    (printf "Please enter your full name surrounded by quotation marks.\n")
+    ;; save the value they type in a local variable called name
+    (let
+      
+        ((name (read)))
+      ;; prompt the user for their age
+      (printf "Please enter your age.\n")
+      ;; save the number in the local variable called age
+      (let
+          ((age (read)))
+        ;; print the result of the two read statements
+        (printf "Your name is ~a and your age is ~a.\n" name age)))))
+
+;; This pattern of using a printf expression before a read statement is 
+;; known as "prompt and read".  The printf tells the user what entry is 
+;; expected and the read statement reads the data.
+;;
+(get-name-and-age)
+
+
+
+;; REPEAT-ROLL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; NAME:        REPEAT-ROLL
+;; INPUT:       none
+;; OUTPUT:      none
+;; SIDE-EFFECT: Printing directions to the user and reading
+;;              entries by user
+;;
+;; The pattern of interactive functions: printf->let->read.
+
+;; Write the repeatRoll function so that it contains all helper functions
+;; and local variables. 
+
+;; global variable (make local)
+;(define SIDES 6)
+
+;; helper function (make local)
+;(define ROLL-DICE
+;  (lambda (num)
+;    (+ (add1 (random num))
+;       (add1 (random num)))))
+
+;; Function definition:
+;(define repeatRoll
+;  (lambda ()
+
+
+;; Instead of writing printf's just precede call to function with a string.
+;(printf "Calling (repeatRoll)\n")
+;(repeatRoll) 
+
+;; We could modify the repeatRoll function so that it keeps track of the total
+;; value rolled by all tosses of the dice by adding an extra parameter and
+;; using an accumulator to hold the sum of the rolls until the user wants to 
+;; stop. 
+
+(newline)
+(newline)
+(newline)
+(test)

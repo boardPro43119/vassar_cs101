@@ -1,0 +1,420 @@
+(require test-engine/racket-tests)
+
+;; CS101 Lecture Notes     
+;; Spring 2019              
+;;
+;; Use Advanced Student language for this lecture.
+
+;; THE STRUCTURE OF STRINGS:
+;;
+;; Strings are stored as indexed sequences of characters. The index
+;; number for a particular string str always starts at 0 and ends at
+;; (string-length str) - 1. This is called "0-based indexing" and
+;; it is used for most compound data structures in computer languages.
+;;            
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; USING STRING FUNCTIONS:
+;;
+;; There are many functions written to perform operations on strings,  
+;; including those most commonly used:  
+;;           STRING-LENGTH (1-parameter function)
+;;            (string-length str) -> integer
+;;            input:  str: string
+;;            output: returns the number of characters in str
+;;
+;;           STRING-APPEND (any number of parameters)
+;;            (string-append str1 str2 ...) -> string
+;;            input:  str1,str2,...: string
+;;            output: returns str1 str2 ... as a single string
+;;
+;;           SUBSTRING (2-parameter version)
+;;            (substring str pos1) -> string
+;;            input:  str: string; pos1: integer
+;;            output: returns string starting at pos1 to end of str
+;;
+;;           SUBSTRING (3-parameter version)
+;;            (substring str pos1 pos2) -> string
+;;            input:  str: string; pos1 pos2: integers
+;;            output: returns string starting at pos1 to pos2-1
+;;
+;;           STRING-REF (2-parameter function)
+;;            (string-ref str pos) -> char
+;;            input:  str: string; pos: integer
+;;            output: returns the character at the given position 
+;;
+;;           STRING (any number of parameters)   
+;;            (string char1 char2 ...) -> string
+;;            input:  char1,char2,...: >= 1 char
+;;            output: returns a string composed of given chars
+;;
+;;           STRING? (1 parameter)
+;;            (string? arg) -> boolean
+;;            input:  arg is any valid scheme type
+;;            output: boolean, #t only if arg is a string
+;;
+;;
+;;  The string counterpart to the empty list is the empty string, ""
+;;
+;;  Many string functions have counterparts that have similar names and
+;;  actions as list functions do. We will look at non-empty lists in the
+;;  next part of this lecture.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; USING FUNCTIONS THAT CONVERT ONE TYPE TO ANOTHER:
+;; 
+;; As you look through the built-in functions in the Help Desk, you   
+;; will see many names that contain a "->".  When this pattern of 
+;; characters is used in a function name, the function is generally
+;; a TYPE CONVERTER.  Examples of type converting functions:
+;;
+;;      SYMBOL->STRING
+;;       (symbol->string sym) -> string
+;;       input:  quoted symbol sym
+;;       output: string representation of symbol
+;;
+;;      STRING->SYMBOL
+;;       (string->symbol str) -> quoted symbol
+;;       input:  str is a string (with no blank spaces)
+;;       output: symbol representation of string
+;;
+;;      STRING->NUMBER
+;;       (string->number numstr) -> number or false
+;;       input:  numstr is a string
+;;       output: number or false if numstr is not a string
+;;               representation of a number
+;;
+;;      NUMBER->STRING 
+;;       (number->string num) -> string
+;;       input:  num is a number
+;;       output: string representation of num
+
+
+;; NEXT: Non-Empty Lists
+
+;; The QUOTE special form (or ') has the action of shielding its argument from
+;; evaluation.  A list written as '(a b c) does not undergo default eval;
+;; instead, it represents a non-empty list of quoted symbols.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; LISTS: SELF-REFERENTIAL DATA STRUCTURE FOR DATA SETS OF ARBITRARY SIZE
+;;
+;; The standard data structure provided in Racket to hold arbitrary amounts 
+;; of data is called a *list*: a list is a sequentially arranged grouping
+;; of values, ending with the empty list. 
+;;
+;; The smallest possible list is the empty list, represented by the word
+;; empty, null, or '().  
+;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; BASIC FUNCTIONS FOR THE LIST DATA TYPE:
+;; 
+;; CONS: The cons function is one way to make non-empty lists 
+;;       by adding one new element at a time to the left side
+;;       (first position) of an existing list (which MUST start
+;;       out being the empty list).
+;;
+;; The contract for the cons function looks like this:
+;;     (cons a (list of any)) -> (list of any) ; a is now first element
+;;
+;; cons is called a list CONSTRUCTOR for a non-empty list.
+;;
+;; There are FIELDS that can be accessed in a non-empty list: 
+;;    first - returns the leftmost item from a non-empty list
+;;    rest  - returns everything except the left-most item in a 
+;;            non-empty list. Always returns a list.
+;;
+;;     The contract for the FIRST function looks like this:
+;;            (first (cons Y (list of anything))) -> Y  
+;;
+;;     The contract for the REST function looks like this:
+;;        (rest (cons Y (list of anything))) -> (list of anything) 
+;;
+
+;; DEFINITION OF SELF-REFERENTIAL DATA TYPE LIST:
+;;
+;; In general, a list can be defined as being either:
+;; 1. empty, or
+;; 2. the result of (cons element existing_list)
+;;
+;; Since you need a list to create a list, you must start by consing
+;; an element onto the empty list.
+;;
+;; Each of the expressions below is equivalent, creating a list that contains
+;; only the value 10 and the empty list
+; (cons 10 empty)
+; (cons 10 null)
+; (cons 10 '())
+;;
+(check-expect (first (cons 8 empty)) 8) 
+(check-expect (rest (cons 8 empty)) empty)  
+
+
+;; a longer list is given a name using define:
+(define listy (cons 8 (cons 7 (cons 6 empty))))
+
+;; DRAW PICTURE OF listy 
+
+
+
+; Using the first and rest functions on constructed lists 
+(check-expect (first listy) 8)
+(check-expect (first (rest listy)) 7)
+(check-expect (rest listy) (cons 7 (cons 6 empty)))
+(check-expect (first (rest (rest listy))) 6)
+
+
+
+;; Lists don't have to hold just one data type, e.g.:
+(define multlisty (cons "bird" (cons 3 (cons true empty))))
+
+(check-expect (first multlisty) "bird")
+       
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Built-in functions that consume and/or produce lists (NOTE THAT EACH HAS
+;; A STRING COUNTERPART EXCEPT FOR THE REVERSE FUNCTION):
+;
+;; CREATING A LIST (WITHOUT USING CONS EXPLICITLY):
+;;
+;; list      Contract: (list x ...) -> list (similar to string function)
+;;           input:    x ... = any valid Racket type(s)
+;;           output  Constructs a list of its arguments.
+;;                      
+;;           '(1 2 3) is equivalent to (list 1 2 3) ... but don't use '
+;;            to make a list inside functions.  
+;;           
+;;           Every symbol inside a quoted list is treated like a quoted
+;;           symbol and is not looked up in the GE or LE:
+;;           
+;;           '(a b c) is equivalent to (list 'a 'b 'c)
+;;           '(1 2 3) numbers can't be quoted, so equivalent to (list 1 2 3)
+;;           '("A" "B") strings can't be quoted, so equivalent to (list "A" "B")
+;;
+
+;; FINDING THE LENGTH OF A LIST:
+;; 
+;; length    Contract: (length listy) -> number           (like string-length)
+;;           input:    listy is a list of anything, possibly empty
+;;           output: returns the number of elements in listy.
+;;
+;;
+;; CREATING A SINGLE LIST FROM SUBLISTS:
+;;
+;; append    Contract: (append list1 list2 ...) -> list     (like string-append)
+;;           input:    list1,list2,...are lists of anything
+;;           output:   Creates a single list from several lists.
+;;                     Elements from lists are ordered left to 
+;;                     right, in same order given. 
+;;
+;;
+;; REVERSING A LIST:
+;;
+;; reverse   Contract: (reverse lst) -> list    ==> no string equivalent
+;;           input:    lst is a list of anything
+;;           output:   return lst with all elements reversed.
+
+;; TYPE CHECKERS for empty lists: EMPTY? and NULL?
+;;  
+;; The empty? and null? functions check for the empty list, with the      
+;; contract:
+;;           (empty? (cons 5 empty)) -> boolean (#f--list not empty)
+;;           (null? '()) -> boolean  (#t only for empty list)
+;;
+
+;; TYPE CHECKER for non-empty lists: CONS?
+;; 
+;; The cons? function checks for a non-empty list, with 
+;; contract:
+;;         (cons? (cons 8 empty)) ;-> boolean (#t only for non-empty list)
+;;
+;
+;; TYPE CHECKER for any list: LIST?
+;;
+;; The list? function returns #t if its argument is either an empty or 
+;; non-empty list.
+
+         
+; Write a function that consumes a list with a fixed number of elements.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Ex: Write a function that consumes a list of 4 numbers and produces the 
+;     product of the 4 items.
+
+;(prod-of-4 lon) -> number
+;lon is a list of 4 numbers
+;Outputs the product of all 4 numbers in lon
+
+; PRE-FUNCTION TESTS:
+;(check-expect (prod-of-4 '(1 1 2 3)) ?)
+;(check-expect (prod-of-4 '(2 2 2 2)) ?)
+
+; FUNCTION DEFINITION:
+;(define prod-of-4
+; (lambda (lon)
+
+
+;
+; What happens if we wanted to do the same thing with a list of hundreds of
+; elements?  This is what is meant when computer scientists talk about 
+; "scalability".  This function does not work for lists longer than 4 so we
+; say it's unscalable.
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; SELF-REFERENTIAL DATA DEFINITIONS: 
+;
+;   A list of numbers (LON) is either
+;   1. empty, or
+;   2. it is a non-empty list that was made using (cons n numlist), where 
+;      n is a number and numlist is an LON one item smaller than 
+;      (cons n numlist).
+;  
+;  You will see that, when using lists of arbitrary size, THE SHAPE OF 
+;  FUNCTIONS THAT CONSUME A LIST MATCH THE SHAPE OF THE DATA DEFINITION. 
+
+
+; Since lists may have any size, we need to develop a new type of function
+; that can handle an arbitrary amount of data.  This type of function is
+; called RECURSIVE.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; NAIVE DEFINITION OF RECURSIVE FUNCTION:
+;
+;        A function is recursive if it calls itself. 
+;
+;                   ---------------
+; 
+; If we defined recursion using solely the definition above, we could write a 
+; function like the following (definitely not a good idea):    
+; 
+; (define (rec-func x)
+;   (rec-func x))            ;; NOT A TERMINATING RECURSIVE FUNCTION;
+;                            ;; GOES INTO AN INFINITE LOOP. TRY IT.
+;
+;(rec-func 7)
+
+; If you want a recursive function to terminate, you need to take the leftmost
+; item off the list in each recursive call and call the function recursively
+; on the rest of the list.
+;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; The general pattern of recursive functions:
+; 
+; *  The body of a recursive function contains a decision statement (e.g. cond).
+;                     
+; *  There is at least one base case, or stopping condition, to end the 
+;    function execution. 
+;    
+; *  There is at least one recursive case, or repeating condition, in
+;    which the function calls itself with a different argument that is
+;    CLOSER TO THE BASE CASE than the current parameter value in the last
+;    call.
+;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Ex 1: Write a recursive function called appender that consumes a list of
+;;       strings and outputs all strings appended as they appear in the list, 
+;;       from left to right.
+
+;; SELF-REFERENTIAL DATA DEFINITION FOR A LIST OF STRINGS:
+;; A list of strings (LOS) is either:
+;; 1. empty, or
+;; 2. it's a (cons s los), where s is a string and los is an LOS
+
+;; PRE-FUNCTION COMMENTS:
+;; - (appender list-of-strings) -> string
+;; - list-of-strings is an LOS
+;; - append all strings in list-of-strings
+
+;; Example definitions of lists to use as test cases:
+(define SLIST (list "log" "log" "log" "log" "log"))
+(define GREETING (list "Hi " "how " "are " "you?"))
+
+;; Pre-function tests: 
+;(check-expect (appender SLIST) "logloglogloglog")
+;(check-expect (appender empty) "")
+;(check-expect (appender GREETING) "Hi how are you?")
+;
+;; Function definition:
+;(define (appender list-of-strings)
+
+
+;; Post-function tests:
+;(printf "  (appender SLIST) should be ~a and is ~a\n\n"
+;        "logloglogloglog"
+;        (appender SLIST))
+;(printf "  (appender GREETING) should be ~a and is ~a\n\n"
+;        "Hi how are you?"
+;        (appender GREETING))
+;(printf "  (appender empty) should be ~a and is ~a\n\n"
+;        ""
+;        (appender empty))
+
+
+
+
+;;;;;;;;;;;;;;;RECURSIVE FUNCTION WITH TWO RECURSIVE CALLS;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Ex 2: Write a function called add-even that consumes a list of
+;;       numbers and returns the sum of the even numbers. 
+;;
+;;       This example is different than the ones we've seen because it 
+;;       requires more than one recursive case: one for even numbers
+;;       and another for odd numbers.
+;;       
+
+;; A list of numbers (LON) is either:
+;; 1. empty, or
+;; 2. it's a (cons n list-of-nums), where n is a number and list-of-nums is
+;;    an LON.
+
+;; PRE-FUNCTION COMMENTS:
+;; - (add-even list-of-nums) -> number
+;; - list-of-nums is a LON
+;; - Produces sum of all even numbers in list-of-nums 
+
+;; Pre-function tests: 
+;(check-expect (add-even (list 2 3 6 7 11)) 8)
+;(check-expect (add-even (list 20 21 1)) 20) 
+;(check-expect (add-even (list 1 3 5 7) 0)
+;(check-expect (add-even empty) 0)             ;; ALWAYS test the empty list
+
+;; Function definition:
+;(define (add-even list-of-num)
+
+
+
+;; Post-function printfs:
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;LIST PRODUCING FUNCTION;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Ex 3: Write a function called even-t-odd-f that consumes a list of positive
+;;       integers of any size and produces a list containing true for every 
+;;       even integer on the list and false for every odd integer.
+
+;;PRE-FUNCTION COMMENTS:
+;; - (even-t-odd-f nos) -> list of booleans
+;; - nos:list of positive integers
+;; - Produce the list containing #t for every even integer
+;;   in nos and #f for every odd number.
+
+;; Pre-function tests:
+;(check-expect (even-t-odd-f (list 1 2 3 4 5 6)) (list #f #t #f #t #f #t))
+;(check-expect (even-t-odd-f (list 1111 1113 5 9 2)) (list #f #f #f #f #t))  
+;(check-expect (even-t-odd-f empty) empty)
+;
+;; Function definition:
+;(define (even-t-odd-f nos)
+;
+;
+;
+;; Post-function PRINTFs:
+
+
+;(newline)(newline)
+(test)

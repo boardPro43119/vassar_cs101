@@ -1,0 +1,652 @@
+;; Assignment 6 - Finishing an interactive DNA sequence matcher  
+;; CS101 Assignment 6, Spring 2019
+;; Posted:  4/12/19
+;; Due:     Tuesday April 23rd, by 5 pm.
+(require test-engine/racket-tests)
+
+(display "
+-----------------------------------
+Assignment 6, Spring 2019
+CS101-53
+Benjamin Prud'homme
+-----------------------------------
+\n")
+
+(printf "Lab 8 Definitions:\n")
+(load "lab8-defns.txt")
+
+
+; THIS ASSIGNMENT IS INTENDED TO TEACH YOU MORE ABOUT STRING
+; PROCESSING.  IT ALSO TEACHES YOU HOW YOU CAN LOAD FUNCTIONS
+; INTO YOUR PROGRAM USING THE LOAD FUNCTION. YOU DO NOT NEED
+; TO HAVE ANY BIOLOGY BACKGROUND TO WRITE THE SOLUTION FOR
+; THIS LAB.
+
+
+; Computer science is very much a part of almost every other 
+; scientific discipline (and many non-scientific disciplines, 
+; for that matter). The rapidly emerging field of bioinformatics 
+; is currently one of the areas where computer scientists are 
+; needed to develop algorithms that process humongous strings 
+; of data. 
+; 
+; The genetic code for all living organisms is carried in DNA -- 
+; a molecule with the remarkable capacity to replicate its own 
+; structure. The DNA molecule itself consists of a long strand of 
+; chemical bases, wound together with a complementary molecule to 
+; form a double-helix pattern. The four bases in its structure--
+; adenine, cytosine, guanine, and thymine--combine with each other  
+; only in the following ways:
+; 
+;     Adenine links only with Thymine, and vice versa.
+; 
+;     Cytosine links only with Guanine and vice versa.
+; 
+;  
+; Typically, biologists abbreviate the names of the bases so that 
+; each is represented by its first letter:  A, C, G, or T.
+; 
+; Inside the cell, a DNA strand acts as a template to which other 
+; DNA strands can attach themselves. As an example, suppose that 
+; you have the following string of bases, in which the position 
+; of each base has been numbered as it would be in a string:
+; 
+; 
+;  T  A  A  C  G  G  T  A  C  G 
+;  0  1  2  3  4  5  6  7  8  9 
+;
+; One of the problems that biologists need to solve is finding 
+; a location on which a short DNA strand can attach itself to a 
+; longer one. If, for example, you are trying to find a match for 
+; the strand...
+; 
+;    T  T  G  C  C  the matching complement is  A  A  C  G  G
+; 
+;  
+; The rules for DNA replication dictate that the strand TTGCC
+; can bind to TAACGGTACG at position 1 on TAACGGTACG:
+; 
+;     T  T  G  C  C                                                
+;  T  A  A  C  G  G  T  A  C  G   
+;  0  1  2  3  4  5  6  7  8  9   
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+; In this assignment, you will finish writing a program to
+; interactively check for matching DNA strings. To do this,
+; you will use the functions you wrote for lab 8.
+;
+; Specifically, you should use the following functions from lab 8
+; (interfaces given below):
+; 
+; 1. (repeat-string num str) -> string     (used in function print-ladder)
+;;    Repeats STR NUM times in output string
+
+; 2. (space-bases str) -> string           (used in function print-ladder)
+;;    Produces a string in which all characters are preceded and followed
+;;    by a space.
+
+; 3. (convert-to-complement str) -> string (used in function sequence-matcher)
+;;    Produces a string composed of the matching nucleotide bases to match
+;;    the uncomplemented input string
+
+; 4. (find-match-pos shstr lostr)-> number
+;;    Produces a number representing the position at which the complement
+;;    of SHSTR matches LOSTR, or -1 if no matching position found.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; You can use the load command at the top of the file to load
+; the functions you wrote in lab 8 into this program. To do this:
+
+; 1. Copy your solution file from lab8 into the same directory
+;    as the file you write for the solution to this problem.
+;
+; 2. If you called your solution file for lab 8 lab8-defns.txt,
+;    you should include the line
+;
+;                      (load "lab8-defns.txt")
+;
+;    at the top of the file.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; IMPORTANT:
+; 
+; Write contract, input, purpose, and check-expect statements
+; for each new function or state why testing is not possible.
+; Since you will be printing many strings, remember that a "
+; inside a string should be preceded by a \. Also a \ in a
+; string should be preceded by a \ (when print characters).
+; 
+; You may write helper functions for any of the problems if you
+; use these helpers properly in your solution and if you write
+; appropriate comments and tests for each helper function.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;  Problem 1: VALID-SEQUENCE?
+;
+;    Write a function that takes a string as input and checks if the
+;    characters in the string are all either a, g, c , or t.  The input
+;    string could be either in uppercase, lowercase, or a combination
+;    of upper- and lowercase characters. The function should return #t
+;    if all the characters are valid nucleotide base letters and #f
+;    otherwise.
+;
+;    Examples of running this function are:
+;
+;    > (valid-sequence? "acGTccg")
+;    #t
+;    > (valid-sequence? "acgtdssa")
+;    #f
+;    > (valid-sequence? "")
+;    #t
+;
+;    Hint: If you convert the string to a list of characters, you can validate
+;    each character in the list using either an internal or external helper
+;    function called valid? that takes one character as input and checks if
+;    it is equal (using a case-insensitive equality checker) to a valid base
+;    character. When you have a list of characters, you may be able to use a 
+;    higher-order function with valid? to return a boolean for the entire list. 
+;
+;
+(display "\n
+;;; Contract: (valid-sequence? str) -> boolean
+;;; Input:    STR is a string of letters representing nucleotide bases  
+;;; Output:   #t if the string contains only the letters a, c, g, t, in
+;;;           either lower or uppercase, and #f if any of the characters
+;;;           are not valid sequence letters, or if STR is empty.           
+\n\n")
+
+;; Write check-expect tests for this function.
+(check-expect (valid-sequence? "acgt") #t)
+(check-expect (valid-sequence? "acft") #f)
+(check-expect (valid-sequence? "") #f)
+(check-expect (valid-sequence? "a") #t)
+
+;; Display the check-expect tests
+(display "Check-Expects:
+(check-expect (valid-sequence? \"acgt\") #t)
+(check-expect (valid-sequence? \"acft\") #f)
+(check-expect (valid-sequence? \"\") #f)
+(check-expect (valid-sequence? \"a\") #t)
+\n\n")
+
+;; Function definition:
+(define valid-sequence?
+  (lambda (str)
+    (letrec
+        ;; create a list of characters from the input string
+        ((seq-list (string->list (string-upcase str)))
+         ;; write an internal function to check if all the
+         ;; characters in the seq-list are valid bases
+         (validate-chars (lambda (chars)
+                           (cond
+                             [(empty? chars)
+                              #f]
+                             [(not (or (eq? (first chars) #\A)
+                                       (eq? (first chars) #\C)
+                                       (eq? (first chars) #\G)
+                                       (eq? (first chars) #\T)))
+                              #f]
+                             [(= (length chars) 1) #t]
+                             [else (validate-chars (rest chars))]))))
+      ;; return the result of testing if all the characters
+      ;; in seq-list to be valid bases is true
+      (validate-chars seq-list))))
+
+;; Display of function definition:
+(display "Function Definition:
+(define valid-sequence?
+  (lambda (str)
+    (letrec
+        ;; create a list of characters from the input string
+        ((seq-list (string->list (string-upcase str)))
+         ;; write an internal function to check if all the
+         ;; characters in the seq-list are valid bases
+         (validate-chars (lambda (chars)
+                           (cond
+                             [(empty? chars)
+                              #f]
+                             [(not (or (eq? (first chars) #\\A)
+                                       (eq? (first chars) #\\C)
+                                       (eq? (first chars) #\\G)
+                                       (eq? (first chars) #\\T)))
+                              #f]
+                             [(= (length chars) 1) #t]
+                             [else (validate-chars (rest chars))]))))
+      ;; return the result of testing if all the characters
+      ;; in seq-list to be valid bases is true
+      (validate-chars seq-list))))
+\n\n")
+
+;; Printf tests of function (uncomment when function written):
+(printf "(valid-sequence? \"acgt\") should be ~a and is ~a.\n"
+        #t
+        (valid-sequence? "acgt"))
+(printf "(valid-sequence? \"ayrgt\") should be ~a and is ~a.\n"
+        #f
+        (valid-sequence? "ayrgt"))
+(printf "(valid-sequence? \"\") should be ~a and is ~a.\n"
+        #f
+        (valid-sequence? ""))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 
+; Problem 2: READ-SEQUENCE
+; 
+; Write a function called read-sequence that consumes a string, 
+; str, which is either "long" or "short". The function will use
+; the strings "long" or "short" as part of a prompt to the
+; user and should return the string result of reading a DNA sequence
+; from the user in all uppercase letters. The strings "long" and
+; "short" are used in the printf that asks the user to enter a
+; "long" or "short" DNA sequence (see examples below).
+;
+; This function should be the place where you validate the characters
+; in the input string as being valid or invalid.
+;
+; The read function returns a quoted symbol, so you will need to
+; convert it to a string using the symbol->string function.
+; 
+; Example executions of this function in the interactions window
+; are shown below. Each execution begins with a function call at
+; >, the prompt in the interactions window. Notice that the function
+; returns the user's entry in all uppercase letters.
+; 
+; > (read-sequence "long")
+; Please enter a long DNA sequence
+; Agtaccg
+; "AGTACCG"
+;  
+; > (read-sequence "short")
+; Please enter a short DNA sequence
+; ACf
+; Invalid sequence.
+; Please enter a short DNA sequence
+; GgtC
+; "GGTC"
+;  
+; > (read-sequence "long")
+; Please enter a long DNA sequence
+; agbtt 
+; Invalid sequence.
+; Please enter a long DNA sequence
+; agCtt
+; "AGCTT"
+;  
+; > (read-sequence "short")
+; Please enter a short DNA sequence
+; agctz
+; Invalid sequence.
+; Please enter a short DNA sequence
+; aGcTT
+; "AGCTT"
+;
+
+(display "\n
+; Contract: (read-sequence type) -> string
+; Input:    TYPE is a string, either \"short\" or \"long\"
+; Output:   a string, the uppercase letters of the user's
+;           entry.
+; Side-Effect: Prints and reads a DNA sequence from the user.
+\n")
+
+;;No pre-function tests due to user interaction
+
+;;Function Definition:
+(define read-sequence
+   (lambda (type)
+     ;; prompt the user for type, either "long" or "short"
+     ;; You do not need an if to check if type is "long" or
+     ;; "short". Just use type embedded in the prompt.
+     (printf "Please enter a ~a DNA sequence: " type)
+     ;; in a let, read and save the user response.
+     (let
+         ((response (read)))
+       ;; if not valid-sequence, return "Invalid sequence"
+       ;; and make a recursive call to read-sequence;
+       ;; otherwise, if the sequence is valid, return the
+       ;; user's response in all capital letters.
+       (if (not (valid-sequence? (string-upcase (symbol->string response))))  
+           (begin
+             (printf "Invalid sequence\n")
+             (read-sequence type))
+           (string-upcase (symbol->string response))))))       
+
+(display ";;Function Definition:
+(define read-sequence
+   (lambda (type)
+     ;; prompt the user for type, either \"long\" or \"short\"
+     ;; You do not need an if to check if type is \"long\" or
+     ;; \"short\". Just use type embedded in the prompt.
+     (printf \"Please enter a ~a DNA sequence: \" type)
+     ;; in a let, read and save the user response.
+     (let
+         ((response (read)))
+       ;; if not valid-sequence, return \"Invalid sequence\"
+       ;; and make a recursive call to read-sequence;
+       ;; otherwise, if the sequence is valid, return the
+       ;; user's response in all capital letters.
+       (if (not (valid-sequence? (string-upcase (symbol->string response))))  
+           (begin
+             (printf \"Invalid sequence\\n\")
+             (read-sequence type))
+           (string-upcase (symbol->string response))))))     
+\n\n")
+
+;; Uncomment these calls to test your read-sequence function:
+(read-sequence "short")
+(read-sequence "long")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;  Problem 3: PRINT-LADDER
+;
+;    Write a function that prints the "ladder" structure for matching
+;    short and long DNA sequences. This function will have only side-
+;    effect printing and has been written by students in the past in
+;    a single call to printf.
+;
+;    Note that the matching position POS of the complement of the
+;    short string and the long string has been passed in to this
+;    function from another function that calls find-match-pos.
+;
+;    An example of the printout from this function (where pos=3):
+;
+;               ------------                  
+;                |  |  |  |
+;                C  A  A  T 
+;       C  A  G  G  T  T  A  T 
+;       |  |  |  |  |  |  |  | 
+;      ------------------------
+;
+;    Notice that the top line has pos*3 spaces before starting to
+;    print (string-length sh)*3 dashes and a newline.  The second line has
+;    another pos*3 spaces before printing (string-length sh)*3 " | "s and
+;    a newline. The third line has pos*3 spaces before printing the
+;    spaced (space-bases) short string and a newline. Test the function
+;    after writing just that much to be sure it is functioning properly
+;    and before going on to print the long sequence.
+;
+(display "
+; Contract: (print-ladder sh lo pos) -> void; side-effect printing
+; Input     SH: a string, LO: a string, and POS: a number, the position 
+;           at which the complement of SH matches LO.
+; Output:   none, only side-effect printing to print SH at POS, the position
+;           in LO at which the complement of SH matches LO.
+;           Note: This function is only called if the complement of SH
+;           matches LO, as determined by find-match-pos.
+\n\n")
+
+;; Function definition:
+(define print-ladder
+  (lambda (sh lo pos)
+    (let
+        ((sh-spaced (space-bases sh))
+         (lo-spaced (space-bases lo)))
+      (printf (repeat-string (* pos 3) " "))
+      (printf (repeat-string (string-length sh-spaced) "-"))
+      (newline)
+      (printf (repeat-string (* pos 3) " "))
+      (printf (repeat-string (/ (string-length sh-spaced) 3) " | "))
+      (newline)
+      (printf (repeat-string (* pos 3) " "))
+      (printf sh-spaced)
+      (newline)
+      (printf lo-spaced)
+      (newline)
+      (printf (repeat-string (/ (string-length lo-spaced) 3) " | "))
+      (newline)
+      (printf (repeat-string (string-length lo-spaced) "-"))
+      (newline))))
+
+(display "Function Definition:
+(define print-ladder
+  (lambda (sh lo pos)
+    (let
+        ((sh-spaced (space-bases sh))
+         (lo-spaced (space-bases lo)))
+      (printf (repeat-string (* pos 3) \" \"))
+      (printf (repeat-string (string-length sh-spaced) \"-\"))
+      (newline)
+      (printf (repeat-string (* pos 3) \" \"))
+      (printf (repeat-string (/ (string-length sh-spaced) 3) \" | \"))
+      (newline)
+      (printf (repeat-string (* pos 3) \" \"))
+      (printf sh-spaced)
+      (newline)
+      (printf lo-spaced)
+      (newline)
+      (printf (repeat-string (/ (string-length lo-spaced) 3) \" | \"))
+      (newline)
+      (printf (repeat-string (string-length lo-spaced) \"-\"))
+      (newline))))
+\n\n")
+
+;; Test this function by uncommenting the lines below:
+(print-ladder "CAT" "AAGTAAA" 2)
+(print-ladder "C" "AATAAAG" 6)
+(print-ladder "C" "GATAAAG" 0)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 
+;  Problem 4: SEQUENCE-MATCHER
+;
+;    You should be able to use most if not all of the functions you 
+;    wrote for lab 8 in the problem, the main solution for this assignment.
+;  
+;    Write a 0-parameter interactive function that does the following:          
+;    
+;    1. Prompt the user for a long sequence of nucleotide bases.
+;
+;    2. Check if the string entered is only composed of letters
+;       that represent nucleotide bases.  If there are other
+;       characters present, your program should tell the user
+;       they entered an invalid sequence and go back to step 1.
+;
+;    3. Prompt the user for a short sequence of nucleotide bases.
+;
+;    4. Check if the string entered is only composed of letters
+;       that represent nucleotide bases.  If there are other
+;       characters present, your program should tell the user
+;       they entered an invalid sequence and go back to step 3.
+;
+;    5. Save the valid sequences in, e.g., variables short and long.
+;    
+;    6. Print the contents of the variables short and long as
+;       shown in these examples: "Long is GATTCC, short is TAAG".
+;       Note that short is not the complemented version of the
+;       short string in this print statement but it is all
+;       uppercase.
+;    
+;    7. Find the first matching position of the complement of the
+;       short string on the long string using find-match-pos
+;       from lab 8.   
+;    
+;       a. If no match is found, report no match:
+;          "No match found."
+;       
+;       b. Otherwise, report the matching position,
+;          eg, "TAAG matches GATTCC at position 1".
+;          Use the function you wrote for Prob. 3,
+;          print-ladder, to do the printing.
+;    
+;    Example executions of this function in the interactions 
+;    window are shown below. Each execution begins with >, the 
+;    prompt in the interactions window. Pay close attention to 
+;    these sample runs and make sure your program works the same
+;    way (with some wiggle room for personal flair).
+;       
+
+ 
+;; SAMPLE RUN #1:     
+; 
+; > (sequence-matcher)
+; 
+; Please enter a long DNA sequence:       ;; from read-sequence                           
+; caggttat
+; 
+; Please enter a short DNA sequence:      ;; from read-sequence
+; caat
+; 
+; Long is CAGGTTAT, short is CAAT         ;; from sequence-matcher
+; 
+; CAAT matches CAGGTTAT at position 3     ;; from sequence-matcher after
+;                                         ;; converting short to complement
+;                                         ;; and calling find-match-pos
+; 
+;          ------------                   ;; from problem 3, print-ladder
+;           |  |  |  |
+;           C  A  A  T 
+;  C  A  G  G  T  T  A  T 
+;  |  |  |  |  |  |  |  | 
+; ------------------------
+;
+;
+;
+;; SAMPLE RUN #2:  No match is found.
+;
+; > (sequence-matcher)
+; 
+; Please enter a long DNA sequence:   
+; gggggggaaattc.
+; 
+; 
+; Please enter a short DNA sequence:  
+; TTTT
+; 
+; Long is GGGGGGGAAATTC, short is TTTT
+; 
+; No match found.                       ;; from sequence-matcher after
+;                                       ;; calling find-match-pos
+;
+
+;; SAMPLE RUN #3:
+;
+; > (sequence-matcher)
+; 
+; Please enter a long DNA sequence:
+; GATTCTG
+; 
+; Please enter a short DNA sequence:
+; cta
+; 
+; Long is GATTCTG, short is CTA
+; 
+; CTA matches GATTCTG at position 0                                    
+; 
+; ---------
+;  |  |  | 
+;  C  T  A 
+;  G  A  T  T  C  T  G 
+;  |  |  |  |  |  |  | 
+; ---------------------
+;
+;
+;; SAMPLE RUN #4: (Bad sequences entered)
+;
+; > (sequence-matcher)
+; 
+; Please enter a long DNA sequence:      ;; from read-sequence
+; ghtsleip
+;
+; Invalid sequence.                      ;; from read-sequence if
+;                                        ;; valid-sequence? => #f
+;
+; Please enter a long DNA sequence:      ;; from read-sequence if
+; ACGTTA                                 ;; valid-sequence? => #t     
+;  
+; Please enter a short DNA sequence:     ;; from read-sequence 
+; cpa                                    
+; 
+; Invalid sequence.                      ;; from read-sequence if
+;                                        ;; valid-sequence? => #f   
+;
+; Please enter a short DNA sequence:     ;; from read-sequence
+; aa
+; 
+; Long is ACGTTA, short is AA            ;; from sequence-matcher
+; 
+; AA matches ACGTTA at position 3                                 
+; 
+;          ------
+;           |  | 
+;           A  A 
+;  A  C  G  T  T  A 
+;  |  |  |  |  |  |  
+; ------------------
+
+; If your type is set to a particular font, your output may be
+; skewed.  Try going into Preferences and choosing the font
+; Monaco. It has non-proportional spacing so every character
+; takes equal amount of space.
+
+;; FUNCTION HEADER:
+(display "\n
+;;; Contract: (sequence-matcher) -> void; side-effect printing
+;;; Input:    none
+;;; Purpose:  Prompt user for a long and short string of DNA
+;;;           nucleotide bases, match the complement of the
+;;;           short string to the long, and print a DNA ladder
+\n")
+
+(define sequence-matcher
+   (lambda ()
+     ;; need let* here because we are using locally defined variable in
+     ;; the definition of a subsequent variable
+     (let*
+         ;; convert both short and long to uppercase before assigning
+         ;; them to variables
+         ((lo-input (read-sequence "long"))
+          (sh-input (read-sequence "short"))
+          (long lo-input)
+          (short sh-input))  
+       (printf "Long is ~a, short is ~a\n" long short)
+       (let
+           ;; save the matching position of the complement of short
+           ;; and long
+           ((match (find-matching-pos (convert-to-complement short) long)))
+         ;; match will be -1 if no matching position is found; otherwise
+         ;; match will be >= 0, in which case you should call print-ladder
+         ;; with short, long, and match as input
+         (if (= match -1)
+             (printf "No match found.\n")
+             (begin
+               (printf "~a matches ~a at position ~a\n" short long match)
+               (print-ladder short long match)))))))
+
+(display "Function Definition:
+(define sequence-matcher
+   (lambda ()
+     ;; need let* here because we are using locally defined variable in
+     ;; the definition of a subsequent variable
+     (let*
+         ;; convert both short and long to uppercase before assigning
+         ;; them to variables
+         ((lo-input (read-sequence \"long\"))
+          (sh-input (read-sequence \"short\"))
+          (long lo-input)
+          (short sh-input))  
+       (printf \"Long is ~a, short is ~a\\n\" long short)
+       (let
+           ;; save the matching position of the complement of short
+           ;; and long
+           ((match (find-matching-pos (convert-to-complement short) long)))
+         ;; match will be -1 if no matching position is found; otherwise
+         ;; match will be >= 0, in which case you should call print-ladder
+         ;; with short, long, and match as input
+         (if (= match -1)
+             (printf \"No match found.\\n\")
+             (begin
+               (printf \"~a matches ~a at position ~a\\n\" short long match)
+               (print-ladder short long match)))))))
+\n\n")
+
+;;Uncomment the call below to run your program
+(sequence-matcher)
+
+(newline)
+(newline)
+(test)

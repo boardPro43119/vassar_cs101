@@ -1,0 +1,375 @@
+;; Lab 9 - Writing functions that use iteration 
+;; CS101 Spring 2019
+
+(require test-engine/racket-tests)
+
+;; In this lab, you will write iterative functions that use while loops
+;; instead of recursion or higher order functions.
+
+;; 1. Set up a new directory called lab9 in your cs101/labs directory.
+;; 2. Save this file in the lab9 directory.
+;; 3. When finished, get checked off and submit your solution:
+;;           submit101 w-lab9 lab9
+;;
+
+
+(display "
+-----------------------------------
+Lab 9, Spring 2019
+CS101-53 
+Benjamin Prud'homme
+-----------------------------------\n")
+
+;; The contracts are given for you. Write check-expect and printf tests
+;; for each function.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 1:  MAX-ELT
+;;
+;; Define a function, called max-elt, that satisfies the following 
+;; contract:
+;;
+(display "
+    ;;  CONTRACT:  (max-elt listy) --> number
+    ;; ---------------------------------------------
+    ;;  INPUT:   LISTY, a *non-empty* list of numbers
+    ;;  OUTPUT:  The MAXIMUM number in LISTY
+\n\n")
+;;
+;;Here are some examples:
+;;    > (max-elt '(6 7 71 3 4))
+;;    71
+;;    > (max-elt '(-2 -5 -9))
+;;    -2
+;;    > (max-elt '(0))
+;;    0
+;;
+;; NOTE:  You are not allowed to use the built-in max function for this
+;; problem.
+
+(check-expect (max-elt '(6 7 71 3 4)) 71)
+(check-expect (max-elt '(-2 -5 -9)) -2)
+(check-expect (max-elt '(0)) 0)
+
+(display "
+Function Tests:
+(check-expect (max-elt '(6 7 71 3 4)) 71)
+(check-expect (max-elt '(-2 -5 -9)) -2)
+(check-expect (max-elt '(0)) 0)
+\n")
+
+(define max-elt
+  (lambda (listy)
+    (let
+        ((max-so-far (first listy)))
+      (while
+       (not (empty? listy))
+       (if (> (first listy) max-so-far) (set! max-so-far (first listy)))
+       (set! listy (rest listy)))
+      max-so-far)))
+
+(display "
+Function Definition:
+(define max-elt
+  (lambda (listy)
+    (let
+        ((max-so-far (first listy)))
+      (while
+       (not (empty? listy))
+       (if (> (first listy) max-so-far) (set! max-so-far (first listy)))
+       (set! listy (rest listy)))
+      max-so-far)))
+\n")
+
+(display "Post-Function Tests:\n")
+(printf "(max-elt '(6 7 71 3 4)) should be 71 and is ~a\n"
+        (max-elt '(6 7 71 3 4)))
+(printf "(max-elt '(-2 -5 -9))) should be -2 and is ~a\n"
+        (max-elt '(-2 -5 -9)))
+(printf "(max-elt '(0)) should be 0 and is ~a\n"
+        (max-elt '(0)))
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 2: REMOVE-IF-NOT
+;;
+;; Define a function, called remove-if-not, that satisfies the following 
+;; contract:
+;;
+(display "
+    ;;  CONTRACT:  (remove-if-not pred listy) -> list
+    ;; --------------------------------------------------------------
+    ;;  INPUTS:  PRED, a predicate that expects one input
+    ;;           LISTY, a list of elements, each of which is a
+    ;;           suitable input for PRED
+    ;;  OUTPUT:  A list that contains all of the elements of LISTY,
+    ;;           *except* those for which PRED returns #t.
+\n\n")
+;;
+;Here are some examples:
+;    > (remove-if-not even? '(1 2 3 4 5 6))
+;    (1 3 5)
+;    > (remove-if-not odd? '(1 2 3 4 5 6))
+;    (2 4 6)
+;    > (remove-if-not number? '())
+;    ()
+
+(check-expect (remove-if-not even? '(1 2 3 4 5 6)) '(1 3 5))
+(check-expect (remove-if-not odd? '(1 2 3 4 5 6)) '(2 4 6))
+(check-expect (remove-if-not number? '()) '())
+
+(display "
+Function Tests:
+(check-expect (remove-if-not even? '(1 2 3 4 5 6)) '(1 3 5))
+(check-expect (remove-if-not odd? '(1 2 3 4 5 6)) '(2 4 6))
+(check-expect (remove-if-not number? '()) '())
+\n")
+
+(define remove-if-not
+  (lambda (pred listy)
+    (let
+        ((filtered-list '()))
+      (while
+       (not (empty? listy))
+       (if (not (pred (first listy)))
+           (set! filtered-list (cons (first listy) filtered-list)))
+       (set! listy (rest listy)))
+      (reverse filtered-list))))
+
+(display "
+Function Definition:
+(define remove-if-not
+  (lambda (pred listy)
+    (let
+        ((filtered-list '()))
+      (while
+       (not (empty? listy))
+       (if (not (pred (first listy)))
+           (set! filtered-list (cons (first listy) filtered-list)))
+       (set! listy (rest listy)))
+      (reverse filtered-list))))
+\n")
+
+(display "Post-Function Tests:\n")
+(printf "(remove-if-not even? '(1 2 3 4 5 6)) should be '(1 3 5) and is ~a\n"
+        (remove-if-not even? '(1 2 3 4 5 6)))
+(printf "(remove-if-not odd? '(1 2 3 4 5 6)) should be '(2 4 6) and is ~a\n"
+        (remove-if-not odd? '(1 2 3 4 5 6)))
+(printf "(remove-if-not number? '()) should be '() and is ~a\n"
+        (remove-if-not number? '()))
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 3: EVERY-OTHER-ONE
+;;
+;; Define a function, called every-other-one, that satisfies the following 
+;; contract:
+;;
+(display "
+    ;;  CONTRACT:  (every-other-one listy) -> list 
+    ;; ---------------------------------------------------------------
+    ;;  INPUT:   LISTY, a list of any valid data types
+    ;;  OUTPUT:  A list containing every other element of LISTY.
+    ;;  Note:  The output list should contain roughly half the
+    ;;    elements of LISTY; and their occurrences in the output
+    ;;    list should be in the same order as they occur in the
+    ;;    input list.
+\n\n")
+;;
+;; Here are some examples of the behavior of every-other-one:
+;;    > (every-other-one '(a b c d e f g))
+;;    (a c e g)
+;;    > (every-other-one '(a b c d e f))
+;;    (a c e)
+;;    > (every-other-one '(0 1 0 1 0 1 0 1 0))
+;;    (0 0 0 0 0)
+
+(check-expect (every-other-one '(a b c d e f g)) '(a c e g))
+(check-expect (every-other-one '(a b c d e f)) '(a c e))
+(check-expect (every-other-one '(0 1 0 1 0 1 0 1 0)) '(0 0 0 0 0))
+
+(display "
+Function Tests:
+(check-expect (every-other-one '(a b c d e f g)) '(a c e g))
+(check-expect (every-other-one '(a b c d e f)) '(a c e))
+(check-expect (every-other-one '(0 1 0 1 0 1 0 1 0)) '(0 0 0 0 0))
+\n")
+
+(define every-other-one
+  (lambda (listy)
+    (let
+        ((filtered-list '())
+         (keep-next-elt #t))
+      (while
+       (not (empty? listy))
+       (if keep-next-elt
+           (set! filtered-list (cons (first listy) filtered-list)))
+       (set! listy (rest listy))
+       (set! keep-next-elt (not keep-next-elt)))
+      (reverse filtered-list))))
+
+(display "
+Function Definition:
+(define every-other-one
+  (lambda (listy)
+    (let
+        ((filtered-list '())
+         (keep-next-elt #t))
+      (while
+       (not (empty? listy))
+       (if keep-next-elt
+           (set! filtered-list (cons (first listy) filtered-list)))
+       (set! listy (rest listy))
+       (set! keep-next-elt (not keep-next-elt)))
+      (reverse filtered-list))))
+\n")
+
+(display "Post-Function Tests:\n")
+(printf "(every-other-one '(a b c d e f g)) should be '(a c e g) and is ~a\n"
+        (every-other-one '(a b c d e f g)))
+(printf "(every-other-one '(a b c d e f)) should be '(a c e) and is ~a\n"
+        (every-other-one '(a b c d e f)))
+(printf "(every-other-one '(0 1 0 1 0 1 0 1 0)) should be '(0 0 0 0 0)
+and is ~a\n" (every-other-one '(0 1 0 1 0 1 0 1 0)))
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 4: REM-DUPES
+;;
+;; Define a function, called rem-dupes, that satisfies the following
+;; contract:
+(display "
+    ;;  CONTRACT:  (rem-dupes loa) -> list 
+    ;; ---------------------------------------------------------------
+    ;;  INPUT:   LOA, a list of any valid data types
+    ;;  OUTPUT:  A list that contains the same elements as
+    ;;           LOA in the same order in which they appear
+    ;;           in LOA, but without any duplicates.
+\n\n")
+;;
+;; Here are some examples of its behavior:
+;;    > (rem-dupes '(1 1 1 1 1 1))
+;;    (1)
+;;    > (rem-dupes '(a b r a c a d a b r a))
+;;    (a b r c d)
+;;    > (rem-dupes '(1 2 3 1 2 3 1 2 3 4 3 2 1)
+;;    (1 2 3 4)
+;;
+;;
+
+(check-expect (rem-dupes '(1 1 1 1 1 1)) '(1))
+(check-expect (rem-dupes '(a b r a c a d a b r a)) '(a b r c d))
+(check-expect (rem-dupes '(1 2 3 1 2 3 1 2 3 4 3 2 1)) '(1 2 3 4))
+
+(display "
+Function Tests:
+(check-expect (rem-dupes '(1 1 1 1 1 1)) '(1))
+(check-expect (rem-dupes '(a b r a c a d a b r a)) '(a b r c d))
+(check-expect (rem-dupes '(1 2 3 1 2 3 1 2 3 4 3 2 1) '(1 2 3 4))
+\n")
+
+(define rem-dupes
+  (lambda (loa)
+    (let
+        ((filtered-list '()))
+      (while
+       (not (empty? loa))
+       (if (not (member (first loa) filtered-list))
+           (set! filtered-list (cons (first loa) filtered-list)))
+       (set! loa (rest loa)))
+      (reverse filtered-list))))
+
+(display "
+Function Definition:
+(define rem-dupes
+  (lambda (loa)
+    (let
+        ((filtered-list '()))
+      (while
+       (not (empty? loa))
+       (if (not (member (first loa) filtered-list))
+           (set! filtered-list (cons (first loa) filtered-list)))
+       (set! loa (rest loa)))
+      (reverse filtered-list))))
+\n")
+
+(display "Post-Function Tests:\n")
+(printf "(rem-dupes '(1 1 1 1 1 1)) should be '(1) and is ~a\n"
+        (rem-dupes '(1 1 1 1 1 1)))
+(printf "(rem-dupes '(a b r a c a d a b r a)) should be '(a b r c d)
+and is ~a\n" (rem-dupes '(a b r a c a d a b r a)))
+(printf "(rem-dupes '(1 2 3 1 2 3 1 2 3 4 3 2 1)) should be '(1 2 3 4)
+and is ~a\n" (rem-dupes '(1 2 3 1 2 3 1 2 3 4 3 2 1)))
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Problem 5: LIST-FROM-ZERO-TO-N
+;;
+;; Define a function, called list-from-zero-to-n, that satisfies the
+;; following contract:
+;;
+(display "Problem 5:
+    ;; CONTRACT: (list-from-zero-to-n n) -> list of numbers
+    ;; ----------------------------------------------------
+    ;; INPUT: N, a non-negative integer
+    ;; OUTPUT: A list of the form (0 1 2...N)
+\n\n")
+;;
+;Here are some examples:
+;    > (list-from-zero-to-n 5)
+;    (0 1 2 3 4 5)
+;    > (list-from-zero-to-n 15)
+;    (0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)
+;
+;  NOTE:  You are not allowed to use the build-list higher-order function
+;  to solve this problem.	        
+
+(check-expect (list-from-zero-to-n 5) '(0 1 2 3 4 5))
+(check-expect (list-from-zero-to-n 15) '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15))
+
+(display "
+Function Tests:
+(check-expect (list-from-zero-to-n 5) '(0 1 2 3 4))
+(check-expect (list-from-zero-to-n 15) '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15))
+\n")
+
+(define list-from-zero-to-n
+  (lambda (n)
+    (let
+        ((x 0)
+         (numlst '()))
+      (while
+       (<= x n)
+       (set! numlst (cons x numlst))
+       (set! x (add1 x)))
+      (reverse numlst))))
+
+(display "
+Function Definition:
+(define list-from-zero-to-n
+  (lambda (n)
+    (let
+        ((x 0)
+         (numlst '()))
+      (while
+       (<= x n)
+       (set! numlst (cons x numlst))
+       (set! x (add1 x)))
+      (reverse numlst))))
+\n")
+
+(display "Post-Function Tests:\n")
+(printf "(list-from-zero-to-n 5) should be '(0 1 2 3 4) and is ~a\n"
+        (list-from-zero-to-n 5))
+(printf "(list-from-zero-to-n 15) should be '(0 1 2 ... 14 15)
+and is ~a\n" (list-from-zero-to-n 15))
+(newline)
+
+(newline)
+(newline)
+(test)

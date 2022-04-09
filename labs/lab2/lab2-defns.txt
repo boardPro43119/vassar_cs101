@@ -1,0 +1,216 @@
+; CS101, Spring 2019
+; Lab 2 starter file
+
+
+; The directions for setting up this lab can be found in the
+; lab2inst.html file.
+;
+; Set your language to Swindle and type the necessary call to
+; require and test as described in the lab2inst.html file.
+(require test-engine/racket-tests) 
+
+; The following lines are a valid function call that prints a header
+; for this lab in the interactions window after you press Run. Be
+; sure to include your name in place of the "TYPE YOUR NAME HERE"
+; line.
+
+(display "
+-----------------------------------
+CS101 Lab 2, Spring 2019
+Benjamin Prud'homme
+-----------------------------------\n\n
+")
+
+
+(display "Problem 1: Writing a Fahrenheit to Celsius converter:\n\n")
+
+;;    Define a Racket function called fahr->cels that consumes a single
+;;    input (representing the temperature in Fahrenheit) and returns   
+;;    as output the corresponding temperature in Celsius.
+;;    
+;;    The appropriate conversion formula is:  c = 5.0(f-32)/9.0.
+;;    (You'll have to change this expression a little to get it
+;;    into the form of a Racket expression.)
+;;    
+;;    Make sure that you test your fahr->cels function on the
+;;    following examples:
+;;    
+;;           f = 32.0, f = 212.0, and f = -40.0.
+    
+;;
+;;    After writing the check-within statements, include them in a
+;;    display statement so the actual test can be seen in the output
+;;    that is written to the interactions window.
+;;
+(display "
+Contract: (fahr->cels f) --> number
+Input:    f is a number, the temperature in Fahrenheit.
+Output:   A number, the temperature in Celsius
+\n")
+
+;; WRITE THE CHECK-WITHIN STATEMENTS BELOW THIS LINE
+(check-within (fahr->cels 32) 0 1)
+(check-within (fahr->cels 212) 100 1)
+(check-within (fahr->cels -40) -40 1)
+
+;; DISPLAY THE CHECK-WITHIN STATEMENTS BELOW THIS LINE
+(display "
+(check-within (fahr->cels 32) 0 0.5)
+(check-within (fahr->cels 212) 100 0.5)
+(check-within (fahr->cels -40) -40 0.5)
+\n")
+
+;; DEFINE THE FAHR->CELS FUNCTION BELOW THIS LINE
+(define fahr->cels (lambda (fahr) (* (- fahr 32) 5/9)))
+
+;; DISPLAY THE FAHR->CELS FUNCTION BELOW THIS LINE
+(display "
+(define fahr->cels (lambda (fahr) (* (- f 32) 5/9)))
+\n")
+
+
+(display "Problem 2: Writing an area-of-circle function:\n\n")
+
+;;  Define a Racket function area-of-circle that consumes a single
+;;  input argument called radius (a number representing the radius of a circle) and 
+;;  returns as output the area of the circle.  
+    
+;;  Mathematics books tell us that the area of a circle is calculated
+;;  as PI * (radius * radius).
+
+;;    Make sure that you test your area-of-circle function on the
+;;    following examples:
+;;    
+;;           radius = 5 should be approximately 78.5
+;;           radius = 6 should be approximately 113.09
+;;           radius = 2 should be approximately 12.56
+;;           radius = 3 should be approximately 28.26
+
+(display "
+Contract: (area-of-circle radius) --> number
+Input:    radius, a number representing the radius of a circle
+Output:   a number, the area of the circle.\n")
+
+;; WRITE AND THEN DISPLAY THE CHECK-WITHIN TESTS FOR area-of-circle
+;; BELOW THIS LINE (SEE TEST CASES MENTIONED ABOVE):
+(check-within (area-of-circle 5) 78.5 0.1)
+(check-within (area-of-circle 6) 113.09 0.1)
+(check-within (area-of-circle 2) 12.56 0.1)
+(check-within (area-of-circle 3) 28.26 0.1)
+(display "
+(check-within (area-of-circle 5) 78.5 0.1)
+(check-within (area-of-circle 6) 113.09 0.1)
+(check-within (area-of-circle 2) 12.56 0.1)
+(check-within (area-of-circle 3) 28.26 0.1)
+\n")
+
+;; WRITE AND THEN DISPLAY THE FUNCTION DEFINITION FOR area-of-circle
+;; BELOW THIS LINE:
+(define PI #i3.141592653589793) 
+(define area-of-circle (lambda (radius) (* PI radius radius)))
+(display "
+(define area-of-circle (lambda (radius) (* PI radius radius)))
+\n")
+
+
+
+(printf "\nPROBLEM 3:  Writing an area-of-hexagon function\n")
+
+;;    Make sure that you test your area-of-hexagon function on the
+;;    following examples:
+;;    
+;;           side = 5  should be approximately 64.95
+;;           side = 6  should be approximately 93.53
+;;           side = 12 should be approximately 374.12
+
+(display "
+Contract: (area-of-hexagon side) --> number
+Input:    side, a number representing side-length of hexagon
+Output:   a number, the area of the hexagon.\n")
+
+;; WRITE AND THEN DISPLAY THE CHECK-WITHIN TESTS FOR area-of-hexagon
+;; BELOW THIS LINE (SEE TEST CASES MENTIONED ABOVE):
+(check-within (area-of-hexagon 5) 64.95 0.1)
+(check-within (area-of-hexagon 6) 93.53 0.1)
+(check-within (area-of-hexagon 12) 374.12 0.1)
+(display "
+(check-within (area-of-hexagon 5) 64.95 0.1)
+(check-within (area-of-hexagon 6) 93.53 0.1)
+(check-within (area-of-hexagon 12) 374.12 0.1)
+\n")
+
+;; WRITE AND THEN DISPLAY THE FUNCTION DEFINITION FOR area-of-hexagon
+;; BELOW THIS LINE:
+(define area-of-hexagon (lambda (side) (* 3/2 (sqrt 3) side side)))
+(display "
+(define area-of-hexagon (lambda (side) (* 3/2 (sqrt 3) a a)))
+\n")
+
+(display "\nPROBLEM 4:  Writing an area-of-nut function\n")
+
+;;    Combine calls to the functions you wrote in problems 2 and 3 to 
+;;    produce a function called area-of-nut. According to Wikipedia, 
+;;    a nut is a type of fastener with a threaded hole, usually made
+;;    of metal.
+
+;;    The area-of-nut function consumes two numeric inputs called 
+;;    side and radius, representing the side length of the outer hexagon
+;;    and the radius of the circle in the center of the hexagon. Calculate
+;;    the area of the nut by calling the functions you wrote for Problems
+;;    2 and 3 in the area-of-nut function.
+
+;;    Make sure that you test your area-of-nut function on the following
+;;    examples:
+
+;;    (area-of-nut 5 2) -->  should be approximately 52.39
+;;    (area-of-nut 6 1) -->  should be approximately 90.39
+;;    (area-of-nut 12 5) --> should be approximately 295.58
+ 
+;;    
+;; DISPLAY THE CONTRACT, INPUT, AND OUTPUT AND EXAMPLES FOR THE 
+;; area-of-nut FUNCTION BELOW THIS LINE:
+;;----------------------------------------------------------
+(display "
+Contract: (area-of-nut side radius)
+Input:    side is a number, the side length of the
+          hexagon and radius is a number, the radius
+          of the inner circle
+Output:   a number, the area of the nut.\n")
+
+;; WRITE AND THEN DISPLAY THE CHECK-WITHIN TESTS FOR area-of-nut
+;; BELOW THIS LINE (SEE TEST CASES MENTIONED ABOVE):
+(check-within (area-of-nut 5 2) 52.39 0.1)
+(check-within (area-of-nut 6 1) 90.39 0.1)
+(check-within (area-of-nut 12 5) 295.58 0.1)
+(display "
+(check-within (area-of-nut 5 2) 52.39 0.1)
+(check-within (area-of-nut 6 1) 90.39 0.1)
+(check-within (area-of-nut 12 5) 295.58 0.1)
+\n")
+
+;; WRITE AND THEN DISPLAY THE FUNCTION DEFINITION FOR area-of-nut
+;; BELOW THIS LINE:
+(define area-of-nut
+  (lambda (side radius) (- (area-of-hexagon side) (area-of-circle radius))))
+(display "
+(define area-of-nut
+  (lambda (side radius) (- (area-of-hexagon side) (area-of-circle radius))))
+ \n")
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Save this file, show it to a coach or your professor, and 
+; then go back to reading the instructions in your web browser 
+; for directions on submitting this lab electronically and logging
+; out.
+
+(test) 
+(newline)
+(newline)
+
+

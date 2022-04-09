@@ -1,0 +1,446 @@
+;CMPU-101, Spring 2019
+;Homework 8 
+;May 2nd, 2019
+;
+;; This problem originally developed by Prof. Hunsberger; modified by
+;; Prof. Walter
+
+(require test-engine/racket-tests)
+
+(display "
+-----------------------------------
+Assignment 8, Spring 2019
+CS101-53
+Benjamin Prud'homme
+-----------------------------------\n")
+
+;; For this assignment, you will define a new data structure, called SCORECARD.
+;; It will be used to represent a portion of the scorecard for the
+;; Yahtzee game.  (You don't need to know anything about Yahtzee to do
+;; this assignment!)
+;;
+;; FOR FULL CREDIT:	
+;; 1. write your name in the file where indicated,
+;; 2. write sufficient check-expects for each function when possible, 
+;; 3. write printf statements to test your functions when possible, and
+;; 4. write comments in each function.
+;;
+;
+;; Start by copying-and-pasting the following comments and expressions
+;; into your definitions window.
+
+;;  Some global constants that will be used in your solution
+;; ----------------------------------------------------------------
+;;  *BLANK* -- used as the value of an empty slot in the scorecard
+;;  *NUM-CATS* -- the number of usable slots in the scorecard
+;;  *NUM-SLOTS* -- the total number of slots in the scorecard
+;;                   (slot 0 is ignored, only slots 1-6 are used)
+
+(define *blank* '__)    
+(define *num-cats* 6)
+(define *num-slots* (+ *num-cats* 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PROBLEM 1: SCORECARD:
+;;
+(display "PROBLEM 1: 
+    ;;  The SCORECARD data structure
+    ;; ---------------------------------------------
+    ;;   SCORE-VEC, a vector with 7 slots
+    ;;        Slot 0 is ignored; only slots 1-6 are used.
+    ;;   CURR-TOTAL, the sum of the scores currently 
+    ;;        in the score-vec
+\n\n")
+;;
+;1.  Define a new data type called scorecard that has the following fields:
+;;      score-vec:    a vector of length 7, for scores in categories 1-6 
+;;      curr-total:   the sum of the scores in score-vec
+;;
+(define-struct scorecard (score-vec curr-total))
+(printf "Definition:
+(define-struct scorecard (score-vec curr-total))\n\n")
+
+;Recall from Chapter 19 that evaluating the above DEFINE-STRUCT
+;expression has the side effect of automatically creating 6
+;functions, as follows:
+;
+;  CONSTRUCTOR:     make-scorecard
+;
+;  ACCESSORS:       scorecard-score-vec
+;                   scorecard-curr-total
+;
+;  MUTATORS:        set-scorecard-score-vec!
+;                   set-scorecard-curr-total!
+;
+;  TYPE-CHECKER:    scorecard?
+;
+;; You will use these functions (except SCORECARD?) in the rest of this
+;; assignment.
+;
+;-----------------------------------------------------------------------
+
+;2.  Define a function, called INIT-SCORECARD, that satisfies the
+;    following contract:
+;
+(display "PROBLEM 2:
+;    ;;  CONTRACT: (init-scorecard) --> scorecard
+;    ;; ---------------------------------------------------
+;    ;;  INPUTS:  None
+;    ;;  OUTPUT:  A new SCORECARD struct, with its fields
+;    ;;   initialized as follows:
+;    ;;       score-vec:  a vector with 7 slots, where
+;    ;;         each slot contains the *blank* value
+;    ;;       CURR-TOTAL:  0
+\n\n")
+;
+;  Hint:  First create a vector containing 7 *blank* slots; then 
+;         use MAKE-SCORECARD to create the desired scorecard struct
+;         with the vector as field scorecard-score-vec.
+;	 
+;  At this point it will be hard to tell whether your function is
+;  doing the right thing because here's all you'll see:
+;
+;    > (init-scorecard)
+;    #<scorecard>
+;
+;  DrRacket is simply reporting that a SCORECARD object was created.
+;  But we can't see what's inside.  The next function will help with
+;  this.
+
+(define init-scorecard
+  (lambda ()
+    ;; Initialize score-vec to 7 blank slots, curr-total to 0
+    (make-scorecard (vector "__" "__" "__" "__" "__" "__" "__") 0)))
+
+(define sc (init-scorecard))
+(check-expect (scorecard? sc) #t)
+(check-expect (scorecard-score-vec sc)
+              (vector "__" "__" "__" "__" "__" "__" "__"))
+(check-expect (scorecard-curr-total sc) 0)
+
+(printf "(define sc (init-scorecard))\n")
+(printf "(scorecard-score-vec sc)
+should be ~a
+   and is ~a\n"
+        (vector "__" "__" "__" "__" "__" "__" "__")
+        (scorecard-score-vec sc))
+(newline)
+(printf "(scorecard-curr-total sc)
+should be ~a
+   and is ~a\n"
+        0
+        (scorecard-curr-total sc))
+(newline)
+
+;-----------------------------------------------------------------------
+;
+;2.  Define a NON-DESTRUCTIVE function, called PRINT-SCORECARD, that
+;    satisfies the following contract:
+
+(display "PROBLEM 2: PRINT-SCORECARD
+;;  CONTRACT:  (print-scorecard cardie) --> none
+;; ----------------------------------------------
+;;  INPUT:   CARDIE, a scorecard struct
+;;  OUTPUT:  None
+;;  SIDE EFFECT:  Prints out the contents of the scorecard
+\n\n")
+
+;  For a newly initialized scorecard, you should see the following:
+;
+;      > (define testCardy (init-scorecard))
+;      > (print-scorecard testCardy)
+;      Scores: [1|__] [2|__] [3|__] [4|__] [5|__] [6|__] , Total: 0
+;
+;  The numbers 1-6 are the indices of the slots in the score-vec
+;  vector.  Remember, slot 0 is ignored.  For a new scorecard, each
+;  slot should be filled by the value of *blank*, defined above; these
+;  are the underscores.  Later on, some slots may get numbers entered into
+;  them in place of *blank* and the curr-total may be something other than 0.
+;
+;  HINT:  You can use DOTIMES to process all 7 slots in the scoring
+;         vector.  But remember to ignore slot 0.  (It's best to use
+;	  *NUM-SLOTS*, rather than 7, in your function, in case we
+;         want to change the number of slots later on.)
+
+(define print-scorecard
+  (lambda (cardie)
+    (printf "Scores: ")
+    (dotimes (i *num-slots*)
+             (if (not (= i 0))
+                 (printf "[~a|~a] "
+                         i (vector-ref (scorecard-score-vec cardie) i))))
+    (printf ", Total: ~a\n" (scorecard-curr-total cardie))))
+
+(printf "(print-scorecard sc) -->\n")
+(print-scorecard sc)
+(newline)
+
+;-----------------------------------------------------------------------
+;
+;3.  Define a NON-DESTRUCTIVE function, called NUM-OCCURS, that
+;    satisfies the following contract:
+;
+(display "PROBLEM 3:    
+    ;;  CONTRACT: (num-occurs target dicevec) --> number
+    ;; -------------------------------------------------
+    ;;  INPUTS:  TARGET, one of {1,2,3,4,5,6}
+    ;;           DICEVEC, a vector of dice values
+    ;;  OUTPUT:  The number of times TARGET appears
+    ;;           in the DICEVEC vector.
+\n\n")
+
+;; Note: You wrote this function for lab 11.  You may choose to either
+;; load your solution file for lab 11 at the top of this file, paste
+;; your num-occurs function from lab 11 in here, or rewrite the function
+;; below.
+
+;  For example:
+;
+;    > (num-occurs 5 #(1 5 3 2 3 4 3 5 3))
+;    2
+
+(check-expect (num-occurs 5 #(2 3 4 5 3 6 5 1)) 2)
+(check-expect (num-occurs 2 #(2 3 4 2 3 6 2 1)) 3)
+(check-expect (num-occurs 1 #(1)) 1)
+(check-expect (num-occurs 5 #(2)) 0)
+(check-expect (num-occurs 5 #()) 0)
+
+(define num-occurs
+  (lambda (target dicevec)
+    (let
+        ;; Counter variable
+        ((count 0)
+         ;; Save vector length
+         (dvlen (vector-length dicevec)))
+      ;; Iterate through all elements of dicevec
+      (dotimes (i dvlen)
+               ;; If the current element equals the target, increment count
+               (if (= (vector-ref dicevec i) target)
+                   (set! count (add1 count))))
+      ;; Return the number of occurrences
+      count)))
+
+(printf "(num-occurs 5 #(2 3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        2
+        (num-occurs 5 #(2 3 4 5 3 6 5 1)))
+(printf "(num-occurs 3 #(3 3 4 5 3 6 5 3)) should be ~a and is ~a\n"
+        4
+        (num-occurs 3 #(3 3 4 5 3 6 5 3)))
+(printf "(num-occurs 1 #(3 3 4 5 3 6 5 3)) should be ~a and is ~a\n"
+        0
+        (num-occurs 1 #(3 3 4 5 3 6 5 3)))
+(printf "(num-occurs 1 #(1)) should be ~a and is ~a\n"
+        1
+        (num-occurs 1 #(1)))
+(printf "(num-occurs 5 #(2)) should be ~a and is ~a\n"
+        0
+        (num-occurs 5 #(2)))
+(printf "(num-occurs 5 #() should be ~a and is ~a\n"
+        0
+        (num-occurs 5 #()))
+(newline)
+
+;-----------------------------------------------------------------------
+;
+;4.  Define a NON-DESTRUCTIVE function, called HAS-N-OF-A-KIND?, that
+;    satisfies the following contract:
+
+(display "PROBLEM 4:
+    ;;  CONTRACT: (has-n-of-a-kind? n dicevec) --> boolean
+    ;; --------------------------------------------------
+    ;;  INPUTS:  N, a non-negative integer
+    ;;           DICEVEC, a vector of dice values
+    ;;  OUTPUT:  #t if DICEVEC contains at *least* N of a kind
+\n\n")
+;;  Here are some examples:
+;;
+;;    > (has-n-of-a-kind? 3 #(2 1 2 2 4))  ;; There are 3 twos...
+;;    #t
+;;    > (has-n-of-a-kind? 5 #(2 1 2 2 4))  ;; No five of a kind here...
+;;    #f
+;;    > (has-n-of-a-kind? 2 #(3 4 3 3 2))  ;; There are 2 twos (also 3 twos)...
+;;    #t
+;;
+;; Note: You wrote a similar but more complicated function for homework
+;; 7 (count-digits).
+;;
+;; You should modify your solution for that function so that it creates
+;; a vector COUNTIE of length 7 to count 6 possible values (ignore the
+;; 0 position in COUNTIE). Then go through the COUNTIE vector to find one
+;; position that contains N of the same number. You can return from this
+;; function after you have found one position in COUNTIE that has >= N of
+;; a kind, returning #t; or return false if all positions are < N.
+;;
+
+(check-expect (has-n-of-a-kind? 3 #(2 1 2 2 4)) #t)
+(check-expect (has-n-of-a-kind? 5 #(2 1 2 2 4)) #f)
+(check-expect (has-n-of-a-kind? 2 #(3 4 3 3 2)) #t)
+
+(define has-n-of-a-kind? 
+  (lambda (n dicevec)
+    (let
+        ;; Save vector length
+        ((dvlen (vector-length dicevec))
+         ;; Vector to count occurrences of each number from 1 to 6
+         (digit-counter (make-vector 6))
+         ;; Boolean to return at the end
+         (n-of-a-kind? #f))
+      ;; Iterate through all elements of dicevec
+      (dotimes (i dvlen)
+               ;; For each element, increment the appropriate entry of
+               ;; digit-counter
+               (vector-set! digit-counter
+                            (sub1 (vector-ref dicevec i))
+                            (add1 (vector-ref
+                                   digit-counter
+                                   (sub1 (vector-ref dicevec i)))))
+               ;; If this entry in digit-counter just reached n, dicevec does
+               ;; have n of a kind, so set n-of-a-kind? to true
+               (if
+                (>= (vector-ref digit-counter (sub1 (vector-ref dicevec i))) n)
+                (set! n-of-a-kind? #t)))
+      ;; If dicevec does not have n of a kind, n-of-a-kind? will still be false
+      n-of-a-kind?)))
+
+(printf "(has-n-of-a-kind? 3 #(2 1 2 2 4)) should be ~a and is ~a\n"
+        #t
+        (has-n-of-a-kind? 3 #(2 1 2 2 4)))
+(printf "(has-n-of-a-kind? 5 #(2 1 2 2 4)) should be ~a and is ~a\n"
+        #f
+        (has-n-of-a-kind? 5 #(2 1 2 2 4)))
+(printf "(has-n-of-a-kind? 2 #(3 4 3 3 2)) should be ~a and is ~a\n"
+        #t
+        (has-n-of-a-kind? 2 #(3 4 3 3 2)))
+(newline)
+
+;-----------------------------------------------------------------------
+;
+;5.  Define a NON-DESTRUCTIVE function, called COMPUTE-SCORE, that
+;    satisfies the following contract:
+(display "PROBLEM 5:
+    ;;  CONTRACT: (compute-score target dicevec) --> number
+    ;; -----------------------------------------------------
+    ;;  INPUTS:  TARGET, a number in {1,2,3,4,5,6}
+    ;;           DICEVEC, a vector of dice values
+    ;;  OUTPUT:  The number of times TARGET appears in DICEVEC
+    ;;           multiplied by TARGET.
+\n\n")
+
+;; Note: You wrote this function for lab 11.  You may choose to either
+;; load your solution file for lab 11 at the top of this file, paste your
+;; compute-score function from lab 11 in below, or rewrite the function
+;; below.
+
+(check-expect (compute-score 5 #(2 3 4 5 3 6 5 1)) 10)
+(check-expect (compute-score 2 #(2 3 4 2 3 6 2 1)) 6)
+(check-expect (compute-score 1 #(1)) 1)
+(check-expect (compute-score 5 #(2)) 0)
+(check-expect (compute-score 5 #()) 0)
+
+(define compute-score
+  (lambda (target dicevec)
+    (* (num-occurs target dicevec) target)))
+
+(printf "(compute-score 5 #(2 3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        10
+        (compute-score 5 #(2 3 4 5 3 6 5 1)))
+(printf "(compute-score 3 #(2 3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        6
+        (compute-score 3 #(2 3 4 5 3 6 5 1)))
+(newline)
+
+;
+;-----------------------------------------------------------------------
+
+;6.  Define a DESTRUCTIVE function, called ENTER-SCORE!, that satisfies the
+;    following contract:
+
+(display "PROBLEM 6: ENTER-SCORE!
+    ;;  CONTRACT: (enter-score! cat dicevec cardie) -- none
+    ;; ----------------------------------------------------
+    ;;  INPUTS:  CAT, a category in {1,2,3,4,5,6}
+    ;;           DICEVEC, a vector of dice values
+    ;;           CARDIE, a SCORECARD struct
+    ;;  OUTPUT:  None
+    ;;  SIDE EFFECT:  If slot number CAT currently contains
+    ;;    the *BLANK*, then *destructively* modify the 
+    ;;    appropriate slot in CARDIE so that it contains
+    ;;    the score computed by COMPUTE-SCORE. In this case,
+    ;;    add the CURR-TOTAL field in CARDIE to the new score.
+    ;;    If the slot number CAT already has a score, print
+    ;;    out an error message and make no changes (see example below).
+\n\n")
+
+;  Here are some examples: (pay close attention because your
+;  output should be exactly the same as that shown below)
+;  
+;    > (define cardie (init-scorecard))
+;    > (print-scorecard cardie)
+;    Scores: [1|__] [2|__] [3|__] [4|__] [5|__] [6|__] , Total: 0
+;    > (enter-score! 3 #(1 6 3 4 3) cardie)      ;; calls compute-score
+;    > (print-scorecard cardie) 
+;    Scores: [1|__] [2|__] [3|6] [4|__] [5|__] [6|__] , Total: 6
+;    > (enter-score! 5 #(2 5 5 5 5 6 2) cardie)  ;; calls compute-score
+;    > (print-scorecard cardie)
+;    Scores: [1|__] [2|__] [3|6] [4|__] [5|20] [6|__] , Total: 26
+;    > (enter-score! 3 #(1 3 3 3 3) cardie)
+;    No can do!  Category already filled!
+;    > (print-scorecard cardie)
+;    Scores: [1|__] [2|__] [3|6] [4|__] [5|20] [6|__] , Total: 26
+;
+;  You will need to add all the scores in the score-vec field of cardie
+;  and add the result to the curr-total field of cardie.
+
+(define enter-score!
+  (lambda (cat dicevec cardie)
+    (if (eq? (vector-ref (scorecard-score-vec cardie) cat) "__")
+        ;; If the given category is blank...
+        (begin
+          ;; Set the corresponding entry in cardie's score-vec to the total of
+          ;; the appropriate dice in dicevec
+          (vector-set! (scorecard-score-vec cardie)
+                       cat
+                       (compute-score cat dicevec))
+          ;; Increment cardie's curr-total value by the total of
+          ;; the appropriate dice in dicevec
+          (set-scorecard-curr-total! cardie (+ (scorecard-curr-total cardie)
+                                               (compute-score cat dicevec))))
+        ;; If the given category is NOT blank, print an error message
+        ;; and do nothing to cardie
+        (printf "No can do! Category already filled!\n"))))
+(printf "(define sc2 init-scorecard)\n")
+(define sc2 (init-scorecard))
+(printf "(print-scorecard sc2) -->\n")
+(print-scorecard sc2)
+(newline)
+;    Scores: [1|__] [2|__] [3|__] [4|__] [5|__] [6|__] , Total: 0
+(printf "(enter-score! 3 #(1 6 3 4 3) sc2)\n")
+(enter-score! 3 #(1 6 3 4 3) sc2)      ;; calls compute-score
+(printf "(print-scorecard sc2) -->\n")
+(print-scorecard sc2)
+(newline)
+;    Scores: [1|__] [2|__] [3|6] [4|__] [5|__] [6|__] , Total: 6
+(printf "(enter-score! 5 #(2 5 5 5 5 6 2) sc2)\n")
+(enter-score! 5 #(2 5 5 5 5 6 2) sc2)  ;; calls compute-score
+(printf "(print-scorecard sc2) -->\n")
+(print-scorecard sc2)
+(newline)
+;    Scores: [1|__] [2|__] [3|6] [4|__] [5|20] [6|__] , Total: 26
+(printf "(enter-score! 3 #(1 3 3 3 3) sc2)\n")
+(enter-score! 3 #(1 3 3 3 3) sc2)
+;    No can do!  Category already filled!
+(printf "(print-scorecard sc2) -->\n")
+(print-scorecard sc2)
+(newline)
+;    Scores: [1|__] [2|__] [3|6] [4|__] [5|20] [6|__] , Total: 26
+
+;  
+;-----------------------------------------------------------------------
+;
+;When you are done, submit your assignment electronically, as usual:
+;
+;  submit101  w-hw8  hw8
+
+(newline)
+(newline)
+(test)

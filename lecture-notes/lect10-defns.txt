@@ -1,0 +1,289 @@
+;; CS101, Spring 2019
+;; Wednesday, February 27
+
+(require test-engine/racket-tests)
+;; 
+;; Reminder: First exam on Monday, March 4th, at
+;; 3:10 pm.  You will have 2 hours to complete the
+;; exam.
+;;
+;; You can bring one piece of letter paper with notes on both
+;; sides (with print as small as you like) to the exam. 
+;;
+;; Homework 3 is due on Thursday night.  Please let me know if
+;; you are having problems.
+;;
+;; Today:
+;;     - more examples of tail-recursion and using the
+;;       local special form.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Accumulator functions:
+; 
+; An ACCUMULATOR is an extra input parameter used to contain the
+; result of an incremental computation.     
+; 
+; Accumulators allow you to write recursive functions 
+; in tail-recursive fashion. We only need to introduce an
+; additional parameter to the function definition to contain the
+; accumulated value. This technique is like iteration in other
+; languages.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+; Differences between calling an accumulator-style function
+; and calling its non-accumulator counterpart:
+; 
+;   1. The base case value is passed into the function as the 
+;      *inital value* of the accumulator.
+;      
+;   2. The value returned in the base case clause is the 
+;      *accumulator* parameter value.
+;      
+;   3. The recursive case performs its operation on the
+;      accumulator value and passes the accumulator as an
+;      argument in the recursive call.
+ 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function called DELETE-X that takes x, a value of a
+;; valid data type and la, a list of valid data types, and
+;; returns the list without any occurrences of x.
+;; NON-TAIL-RECURSIVE VERSION
+(display "
+Contract: (delete-x x la) -> list of anything
+Input:    x is any data value and la is a list of anything
+Output:   a LIST of anything, missing all occurrences of x.\n")
+;
+;; Pre-function tests:
+;(check-expect (delete-x 3 '(a 4 3 5)) '(a 4 5))
+;(check-expect (delete-x 3 '()) '())
+;(check-expect (delete-x 'a '(a b c a a)) '(b c))
+;
+(display "Function tests:
+(check-expect (delete-x 3 '(a 4 3 5)) '(a 4 5))
+(check-expect (delete-x 3 '()) '())
+(check-expect (delete-x 'a '(a b c a a)) '(b c))\n\n")
+
+;; Function definition:
+;(define (delete-x x la)
+
+
+
+(display "Function definition:
+
+\n\n")
+
+;;;;Post-function tests:
+;;
+;(printf "(delete-x 4 '(8 4 5 3 2 4 1)) should be ~a and is ~a\n\n"
+;        '(8 5 3 2 1) 
+;        (delete-x 4 '(8 4 5 3 2 4 1)))
+;(printf "(delete-x 4 '()) should be ~a and is ~a\n\n"
+;        '() 
+;        (delete-x 4 '()))
+;(printf "(delete-x 4 '(a b c d e)) should be ~a and is ~a\n\n"
+;        '(a b c d e) 
+;        (delete-x 4 '(a b c d e)))
+;  
+(newline)
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function called DELETE-x that takes x, a value of a
+;; valid data type and la, a list of valid data types, and
+;; returns the list without any occurrences of x.
+
+;; TAIL-RECURSIVE ACCUMULATOR VERSION
+(display "
+Contract: (delete-x-rec x la) -> list of anything
+Input:    x is any data value and la is a list of anything
+Output:   a LIST of anything, missing all occurrences of x.\n")
+;
+;; Pre-function tests:
+;(check-expect (delete-x-rec 3 '(a 4 3 5)) '(a 4 5))
+;(check-expect (delete-x-rec 3 '()) '())
+;(check-expect (delete-x-rec 'a '(a b c a a)) '(b c))
+
+(display "\n\nFunction tests:
+(check-expect (delete-x-rec 3 '(a 4 3 5)) '(a 4 5))
+(check-expect (delete-x-rec 3 '()) '())
+(check-expect (delete-x-rec 'a '(a b c a a)) '(b c))\n\n")
+
+;; Function definition:
+;(define (delete-x-rec x la)
+ 
+
+;;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;; NOTE: A PROBLEM WITH USING TAIL RECURSION TO CONSTRUCT
+;; A LIST IS THAT THE ITEMS ARE PUT ON THE ACC IN REVERSE
+;; ORDER. WE WILL LOOK AT TECHNIQUES TO ENSURE THE RETURNED
+;; LIST IS IN THE CORRECT ORDER. 
+;;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
+
+(display "Function definition:
+
+\n\n")
+
+;;;;Post-function tests:
+;;
+;(printf "(delete-x-rec 4 '(8 4 5 3 2 4 1)) should be ~a and is ~a\n\n"
+;        '(8 5 3 2 1) 
+;        (delete-x-rec 4 '(8 4 5 3 2 4 1)))
+;(printf "(delete-x 4 '()) should be ~a and is ~a\n\n"
+;        '() 
+;        (delete-x-rec 4 '()))
+;(printf "(delete-x-rec 4 '(a b c d e)) should be ~a and is ~a\n\n"
+;        '(a b c d e) 
+;        (delete-x-rec 4 '(a b c d e)))  
+(newline)
+(newline)
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a Scheme procedure called "list-between" using regular
+;; and tail recursion.
+
+;; This procedure will take as input a list of numbers called "lst".
+;; It will also take as input two particular numbers called "low"
+;; and "high". The procedure will return a list of all the numbers
+;; in lst that are greater than or equal to low and less than or
+;; equal to high. The order of the members of the returned list does
+;; not matter; however, each number appearing on the returned list
+;; should appear the same number of times as it occurs in the input
+;; list. 
+
+;; Examples of running this function in the interactions window:
+;
+; > (list-between '() 7 9)                     ==> ()
+; > (list-between '(1 2 3 4 5 6 7 8 9) 4 7)    ==> (4 5 6 7)
+; > (list-between '(3 1 9 7 4 2 2) 2 6)        ==> (3 4 2 2)
+
+; a. Write one version of this procedure using regular recursion.
+(display "
+Contract: (list-between lst low hgh) -> list of numbers
+Input:    lst is a list of numbers and low and high are numbers
+          such that low <= high
+Output:   list of numbers\n\n")
+
+;(check-expect (list-between '() 7 9) '())
+;(check-expect (list-between '(1 2 3 4 5 6 7 8 9) 4 7) '(4 5 6 7))
+;(check-expect (list-between '(3 1 9 7 4 2 2) 2 6) '(3 4 2 2))
+
+(display "Function tests:
+(check-expect (list-between '() 7 9) '())
+(check-expect (list-between '(1 2 3 4 5 6 7 8 9) 4 7) ' (4 5 6 7))
+(check-expect (list-between '(3 1 9 7 4 2 2) 2 6) '(3 4 2 2))\n\n")
+
+;(define (list-between lst low hgh)
+
+
+(display "Function definition:
+\n\n")
+
+;(printf "(list-between '() 7 9) should be ~a and is ~a\n"
+;        empty
+;        (list-between '() 7 9))
+;(printf "(list-between '(1 2 3 4 5 6 7 8 9) 4 7) should be ~a and is ~a\n"
+;        '(4 5 6 7)
+;        (list-between '(1 2 3 4 5 6 7 8 9) 4 7))
+;(printf "(list-between '(3 1 9 7 4 2 2) 2 6) should be ~a and is ~a\n\n"
+;        '(3 4 2 2)
+;        (list-between '(3 1 9 7 4 2 2) 2 6))
+
+
+; b. Write another version using local, tail recursion, and an accumulator
+
+(display "
+Contract: (list-between-v2 lst low hgh) -> list of numbers
+Input:    lst is a list of numbers and low and high are numbers
+          such that low <= high
+Output:   list of numbers\n\n")
+
+;(check-expect (list-between-v2 '() 7 9) '())
+;(check-expect (list-between-v2 '(1 2 3 4 5 6 7 8 9) 4 7) '(4 5 6 7))
+;(check-expect (list-between-v2 '(3 1 9 7 4 2 2) 2 6) '(3 4 2 2))
+
+(display "Function tests:
+(check-expect (list-between-v2 '() 7 9) '())
+(check-expect (list-between-v2 '(1 2 3 4 5 6 7 8 9) 4 7) ' (4 5 6 7))
+(check-expect (list-between-v2 '(3 1 9 7 4 2 2) 2 6) '(3 4 2 2))\n\n")
+
+;(define (list-between-v2 lst low hgh)
+
+
+(display "Function definition:
+
+\n\n")
+
+;(printf "(list-between-v2 '() 7 9) should be ~a and is ~a\n"
+;        empty
+;        (list-between-v2 '() 7 9))
+;(printf "(list-between-v2 '(1 2 3 4 5 6 7 8 9) 4 7) should be ~a and is ~a\n"
+;        '(4 5 6 7)
+;        (list-between-v2 '(1 2 3 4 5 6 7 8 9) 4 7))
+;(printf "(list-between-v2 '(3 1 9 7 4 2 2) 2 6) should be ~a and is ~a\n\n"
+;        '(3 4 2 2)
+;        (list-between-v2 '(3 1 9 7 4 2 2) 2 6))
+
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; USING THE RANDOM FUNCTION TO WRITE NON-DETERMINISTIC
+;; PROGRAMS 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+;; Up until now, we have been writing what are known as "deterministic"
+;; programs. This means that the output can be precisely predicted
+;; based on the value of the input.
+
+;; The random function allows us to write "non-deterministic" programs.
+;; In this type of program, we cannot always predict the output due
+;; to the factor of chance introduced by the random function.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function that returns the value created by tossing
+;; a single n-sided die.
+(display "
+Contract: (roll-n-sided n) --> natural number between 1 and n
+Input:    n is a natural number
+Output:   a number between 1 and n, inclusive.\n\n")
+
+;; No check-expects possible due to random nature of return value.
+
+(define (roll-n-sided n)
+ (add1 (random n)))
+  
+
+;(printf "The return value of (roll-n-sided 6) is : ~a\n\n"
+;        (roll-n-sided 6))
+
+;; Use the random function to simulate n tosses of a 6-sided die.
+;; The function should return each of the values rolled in a list.
+
+;; NOTE: I could have used roll-n-sided as a helper function below
+;; but I chose not to.
+
+;(display "
+;Contract: (n-toss-6 n) --> list of numbers 
+;Input:    n, a natural number
+;Output:   a list of numbers between 1 and 6\n\n")
+
+;(display "No tests possible due to random function use.\n\n")
+
+;(define (n-toss-6 n)
+
+
+(display "Function definition:
+
+\n\n")
+
+;(printf "(n-toss-6 20) ==> ")
+;(n-toss-6 20)
+;(newline)
+;(printf "(n-toss-6 11) ==> ")
+;(n-toss-6 11)
+;(newline)
+;(printf "(n-toss-6 0) ==> ")
+;(n-toss-6 0)
+(newline)
+(test)

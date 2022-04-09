@@ -1,0 +1,304 @@
+;; Lab 8 - Writing functions to process strings and characters  
+;; CS101 Spring 2019
+
+(require test-engine/racket-tests)
+
+(display "
+-----------------------------------
+Lab 8, Spring 2019
+CS101-53 
+Benjamin Prud'homme
+-----------------------------------\n")
+
+
+;; PLEASE READ THE ENTIRE FILE BEFORE YOU START CODING!!
+
+; Typically, biologists abbreviate the names of the bases so that 
+; each is represented by its first letter:  A, C, G, or T. This
+; lab involves writing functions that work over strings of bases.
+
+(display "\n\nProblem 1 - SPACE-BASES\n")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Write a function called SPACE-BASES that consumes a string (STR)   
+; and outputs a string that contains each letter in STR with a blank
+; space on either side.  Note that STR may contain both uppercase
+; and lowercase characters, but your function must produce the
+; results in all uppercase letters.
+;
+; Hint:  Look up the string-upcase, string->list, and list->string
+;        functions. They may be helpful.
+;
+; Example tests on this function are given below:
+; 
+;  > (space-bases "AcgT"))
+;  " A  C  G  T "
+;  > (space-bases "CCT"))
+;  " C  C  T "
+;  > (space-bases "g g c c t"))
+;  " G  G  C  C  T "
+;
+; Algorithm for space-bases:
+; 1. save strlst as an all uppercase list of chars
+; 2. define tail-recursive function space-helper for list recursion
+; 3. while strlst is not empty,
+; 4.   string-append the acc, a space to the left, the first (converted to a
+;      a string), and a space to the right of each char in list. 
+
+(display "
+Contract:  (space-bases str)
+Input:     STR is a string
+Output:    Same characters as in STR, but in uppercase, with each separated
+           by a space\n\n")
+
+;;CHECK-EXPECTS:
+(check-expect (space-bases "AcGT") " A  C  G  T ")
+(check-expect (space-bases "cct") " C  C  T ")
+(check-expect (space-bases "GGCCT") " G  G  C  C  T ")
+
+;;FUNCTION DEFINITION:
+(define space-bases
+  (lambda (str)
+     (letrec
+         ((strlst (string->list (string-upcase str)))
+          (space-helper
+           (lambda (acc)
+             (cond
+               [(empty? acc) ""]
+               [else
+                (string-append (string #\space (first acc) #\space)
+                               (space-helper (rest acc)))]))))
+       (space-helper strlst))))
+
+;;Printf tests:
+(printf "(space-bases \"AcGT\") should be ~a and is ~a\n"
+        " A  C  G  T "
+        (space-bases "AcGT"))
+(printf "(space-bases \"cat\") should be ~a and is ~a\n"
+        " C  A  T "
+        (space-bases "cat"))
+(printf "(space-bases \"\") should be ~a and is ~a\n"
+        ""
+        (space-bases ""))
+
+
+
+(display "\n\nProblem 2: CONVERT-TO-COMPLEMENT\n")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Write a function called CONVERT-TO-COMPLEMENT that takes in     
+; uppercase strings of bases and produces the valid uppercase
+; matching string.  For an input of 
+;          "A" your function should produce "T"
+;          "T" your function should produce "A"
+;          "C" your function should produce "G"
+;          "G" your function should produce "C" 
+; 
+; Note:  You can assume that all strings entered will be all
+; upper-case and will contain only the letters A, C, T, G.  You
+; do not have to check for the empty string or strings with
+; invalid characters.A  T  G  A  T  G  A  T  G and is  A  T  G A  T  G A  T  G
+;
+; Example tests on this function are given below:
+; 
+;  > (convert-to-complement " A C G T "))
+;  " T G C A "
+;  > (convert-to-complement " C C T "))
+;  " G G A "
+;  > (convert-to-complement " G G C C T "))
+;  " C C G G A "
+;
+; Algorithm for convert-to-complement:
+; 1. save strlst as an all uppercase list of chars
+; 2. define a tail-recursive function help-conv for list recursion
+; 3. while strlst is not empty,
+; 4.   append the acc to the first (converted to its complement),
+; 5.   when strlst is empty, return the acc as a string
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+(display "
+Contract:  (convert-to-complement bases) -> string
+Input:     BASES, uppercase string that is a sequence of A C T and G
+Output:    A string containing the uppercase complement of BASES,using the
+           rules for matching bases given above.\n\n")
+
+;;CHECK-EXPECT TESTS:
+(check-expect 
+ (convert-to-complement " A C G T T A ") " T G C A A T ")
+(check-expect
+ (convert-to-complement " T A T A T C ") " A T A T A G ")
+(check-expect
+ (convert-to-complement "") "")
+
+
+;;FUNCTION DEFINITION:
+(define convert-to-complement
+  (lambda (bases)
+     (letrec
+         ((strlst (string->list (string-upcase bases)))
+          (help-conv
+           (lambda (lst acc)
+             (cond
+               [(empty? lst) (list->string (reverse acc))]
+               [(char=? (first lst) #\A)
+                (help-conv (rest lst) (cons #\T acc))]
+               [(char=? (first lst) #\T)
+                (help-conv (rest lst) (cons #\A acc))]
+               [(char=? (first lst) #\C)
+                (help-conv (rest lst) (cons #\G acc))]
+               [(char=? (first lst) #\G)
+                (help-conv (rest lst) (cons #\C acc))]
+               [else
+                (help-conv (rest lst) (cons #\space acc))]))))
+       (help-conv strlst '()))))
+
+;;PRINTF TESTS: (uncomment after writing function)
+(printf "(convert-to-complement \" A  G  C  T \") should be ~a and is ~a\n"
+        " T  C  G  A "
+        (convert-to-complement " A  G  C  T "))
+(printf "(convert-to-complement \" C  A  T \") should be ~a and is ~a\n"
+        " G  T  A "
+        (convert-to-complement " C  A  T "))
+(printf "(convert-to-complement \"\") should be ~a and is ~a\n"
+        ""
+        (convert-to-complement ""))
+
+(display "\n\nProblem 3: REPEAT-STRING\n")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Write a function called REPEAT-STRING that consumes a number, NUM, and a  
+; string, STR, and constructs a string that contains STR repeated NUM times.
+; 
+; Example tests on this function are given below:
+; 
+(check-expect (repeat-string 6 " | ") " |  |  |  |  |  | ")
+(check-expect (repeat-string 4 "---") "------------")
+(check-expect (repeat-string 1 "   ") "   ")
+; 
+; Notice that there are blank spaces in the input string in the first and 
+; third test cases. If spaces are present in the input string, they must
+; be included in the output.
+;
+; Suggested solution: Use an inner tail-recursive accumulator function
+; that does recursion from num downto 0, string-appending the acc onto
+; a copy of str num times.  No need to convert the string to a list this
+; time, but you may do so in your solution if necessary.
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+(display "
+Contract:  (repeat-string num str) -> string
+Input:     NUM is a positive integer and STR is a string
+Output:    Append NUM copies of STR for output string.
+\n\n")
+
+;;CHECK-EXPECT TESTS: (uncomment after writing function)
+(check-expect (repeat-string 3 " | ") " |  |  | ")
+(check-expect (repeat-string 2 "1234") "12341234")
+(check-expect (repeat-string 4 "---") "------------")
+
+;;FUNCTION DEFINITION:
+(define repeat-string
+  (lambda (num str)
+    (letrec
+        ((rep-string
+          (lambda (reps output-str)
+            (cond
+              [(= reps 0) output-str]
+              [else (rep-string (sub1 reps) (string-append output-str str))]))))
+      (rep-string num ""))))
+
+
+;;PRINTF TESTS: (uncomment after writing function)
+(printf "(repeat-string 3 \"---\") should be ~a and is ~a\n"
+        "---------"
+        (repeat-string 3 "---"))
+(printf "(repeat-string 3 \" A  T  G \") should be ~a and is ~a\n"
+        " A  T  G  A  T  G  A  T  G"
+        (repeat-string 3 " A  T  G "))
+(printf "(repeat-string 3 \"   \") should be ~a and is ~a\n"
+        "         "
+        (repeat-string 3 "   "))
+
+
+
+(display "\n\nProblem 4: FIND-MATCHING-POS \n") 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 
+;  Write a function called find-matching-pos that consumes two
+;  strings of letters representing bases in DNA strands. The 
+;  first argument should be a valid DNA string in all upper-case 
+;  whose length is less than or equal to the length of the second 
+;  argument. The second argument should be the longer sequence, 
+;  also a valid DNA base string all in upper-case ACTGs. 
+;  
+;  The function should return the first index position in the 
+;  longer base string at which the shorter strand matches, or -1 
+;  if there is no match.
+;
+;; Hint: I wrote this function using string-length, string=?,
+;; and the 2 parameter version of substring as helper functions 
+;; in a tail-recursive inner function.
+
+; Algorithm for convert-to-complement:
+; 1. save the length of the short and long string
+; 2. define a tail-recursive function help-conv for list recursion
+;;   internal function help-conv does recursion over the
+;;   numeric position in the long string, starting
+;;   at 0 and stopping either
+;;     * when the current position plus the
+;;       length of the short string is > length of long str, or
+;;     * when the short string matches a substring of the
+;;       long string from the current position to the current
+;;       position + length of the short string, returning
+;;       pos.
+
+(display "
+Contract:  (find-matching-pos shrt long) -> number
+Input:     SHRT is string of ACTG's
+           LONG is a string of ACTC's such that string-length LONG
+           >= string-length SHRT
+Output:    A number representing the position in LONG at which
+           SHRT matches a substring of LONG
+\n\n")
+;  
+;;CHECK-EXPECT TESTS:
+(check-expect (find-matching-pos "ACG" "TTATGC") -1) ;; no match
+(check-expect (find-matching-pos "TGC" "TTATGC") 3)  ;; match at position 3
+(check-expect (find-matching-pos "TT" "CTTGG") 1)    ;; match at position 1
+(check-expect (find-matching-pos "A" "CCCCCA") 5)    ;; match at position 5
+(check-expect (find-matching-pos "A" "ACCCCA") 0)    ;; match at position 0
+(check-expect (find-matching-pos "C" "AAA") -1)      ;; no match
+
+;; FUNCTION DEFINITION:
+(define find-matching-pos
+  (lambda (shrt long)
+    (letrec
+        ((shrt-length (string-length shrt))
+         (long-length (string-length long))
+         (help-pos
+          (lambda (pos)
+            (cond
+              [(> (+ pos shrt-length) long-length) -1]
+              [(string=? shrt (substring long pos (+ pos shrt-length))) pos]
+              [else (help-pos (add1 pos))]))))
+      (help-pos 0))))
+
+
+
+
+;;PRINTF TESTS: (uncomment after writing function)
+(printf "(find-matching-pos \"TGC\" \"TTATGC\") should be ~a and is ~a\n"
+        3
+        (find-matching-pos "TGC" "TTATGC"))
+(printf "(find-matching-pos \"GG\" \"CAAAGGT\") should be ~a and is ~a\n"
+        4
+        (find-matching-pos "GG" "CAAAGGT"))
+(printf "(find-matching-pos \"TC\" \"TTATGC\") should be ~a and is ~a\n"
+        -1
+        (find-matching-pos "TC" "TTATGC"))
+
+
+
+
+(newline)
+(newline)
+(test)

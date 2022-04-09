@@ -1,0 +1,287 @@
+;; CS101 Lecture Notes                    
+;; Tuesday, March 27th
+;
+(require test-engine/racket-tests)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; WRITING PROGRAMS THAT PRINT TO AND READ RESPONSES FROM USER
+;;
+;; Text-based interactive programs: 
+;;
+;; 1. Use printf to tell user what to do and to deliver results. printf 
+;;    expressions return void, only producing a side-effect. 
+;;
+;; 2. Use read to intake values of user responses in a program.
+;;
+;; 3. It is easiest to use a let expression to save the user response.
+;;
+;; In general, the order of statements that tell the user what to do, read and
+;; save the user response, and perform some action based on that response is:
+;;
+;;      printf -> let -> read -> use local variable
+;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; The READ function:  taking in keyboard input from the user in a program.
+; 
+; There is a function that exists for the purpose of reading input from the
+; user. The function is "zero-parameter" and it is called read. It is usually 
+; necessary to call the read function inside a let statement because, in a 
+; let statement, you can define a name for the input just read.  If you  
+; call (read) alone, the value is not saved for use later on in the function.
+;
+; Rules for using read function:
+; 1. Everything (except numbers, strings (in quotation marks), #t,
+;    #f, #\a (character)) is read as a quoted symbol (but you don't have to 
+;    enter the apostrophe). If you need to have spaces in the input, direct
+;    the user to enter response in quotation marks.
+;
+; 2. If you don't save the item you read in a local variable, you cannot use it
+;    in your program later on, so declare a name for the value in a let
+;    environment and make the let contain all the code that uses the local
+;    variable.
+;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; REPEATROLL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Contract:  (repeatRoll num) -> void, only side-effect printing
+;; Input:     num is a natural number
+;; Purpose:   repeat tossing a num-sided dice until the user wants to quit 
+;;
+;; Note the pattern of text-driven interactive functions: 
+;;                printf->let->read
+;;
+;; Example interaction:
+;  > (repeatRoll 6)
+;  Do you want to roll a 6-sided die (y or n)?
+;  y
+;  You rolled a 4
+;  Do you want to roll a 6-sided die (y or n)?
+;  y
+;  You rolled a 5
+;  Do you want to roll a 6-sided die (y or n)?
+;  n
+;  Bye and thanks for playing!
+
+;; Function definition:
+(define repeatRoll
+  (lambda (num)
+    ;; Ask user if they want to roll a 6-sided die and give them
+    ;; an example of how you want the answer to be entered.
+    (printf "Do you want to roll a(n) ~a-sided die (y or n)?\n" num)
+    
+    ;; Save the value the user inputs using let and read
+    (let
+        ((answer (read)))
+      ;; Make decisions based on what user just entered
+      (cond
+        ;; If user entered 'y, need to print what they rolled and call
+        ;; the function recursively
+        [(symbol=? answer 'y)
+         (printf "You rolled a ~a\n" (add1 (random num)))
+         (repeatRoll num)]
+        ;; If user entered 'n, need to politely finish
+        [(symbol=? answer 'n)
+         (printf "Bye and thanks for playing!\n")]
+        [else
+         (printf "Please enter y or n.\n")
+         (repeatRoll num)])
+      )))
+
+;;(repeatRoll 6)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; Suppose we want to keep track of the sum of all the dice rolls.  How could
+;; this be done?
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; REPEAT-ROLL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PRE-FUNCTION COMMENT:
+;; Contract:  (repeat-roll num) -> void, only side-effect printing
+;; Input:     num is a natural number
+;; Purpose:   repeat tossing a num-sided dice until the user wants to quit,
+;;            keeping track of the sum of all dice rolls.
+
+;;PRE-FUNCTION TESTS:
+; None possible when side-effect printing and no return value.
+;; Example interactions:
+;  > (repeat-roll 6)
+;  Do you want to roll a 6-sided die (y or n)?
+;  y
+;  You rolled a 4
+;  Do you want to roll a 6-sided die (y or n)?
+;  y
+;  You rolled a 5
+;  Do you want to roll a 6-sided die (y or n)?
+;  n
+;  The total of all your rolls is 9.
+;  Bye and thanks for playing!
+
+;  > (repeat-roll 6)
+;  Do you want to roll a 6-sided die (y or n)?
+;  y
+;  You rolled a 6
+;  Do you want to roll a 6-sided die (y or n)?
+;  y
+;  You rolled a 3
+;  Do you want to roll a 6-sided die (y or n)?
+;  y
+;  You rolled a 4
+;  Do you want to roll a 6-sided die (y or n)?
+;  n
+;  The total of all your rolls is 13.
+;  Bye and thanks for playing!
+
+;;FUNCTION DEFINITION:
+(define repeat-roll
+   (lambda (num)
+     ;; define a local accumulator function to keep track of the total
+     ;; of all rolls
+     (letrec
+         ((rep-roll
+           (lambda (sum)
+             ;; Introduce user to purpose of function using a printf
+             (printf "Do you want to roll a(n) ~a-sided die (y or n)?\n" num)
+             ;; Save the value the user inputs using let and read
+             (let
+                 ((answer (read)))
+               ;; Make decisions based on what user just entered
+               (cond
+                 ;; In the case the user entered 'n, need to print the total  
+                 ;; amount they rolled (in the acc) and say goodbye.
+                 [(symbol=? answer 'n)
+                  (printf "The total of all your rolls is ~a.\n" sum)
+                  (printf "Bye and thanks for playing!\n")]
+                 ;; Else user entered 'y, need to print what they rolled and
+                 ;; call the function recursively 
+                 [(symbol=? answer 'y)
+                  (let
+                       ;; name the random value rolled
+                      ((roll (add1 (random num))))
+                    ;; tell user what number they rolled
+                    (printf "You rolled a ~a\n" roll)
+                    ;; call local accumulator function recursively and add
+                    ;; latest roll onto acc))
+                    (rep-roll (+ sum roll)))]
+                 [else
+                  (printf "Please enter y or n.\n")
+                  (repeatRoll num)])))))
+                
+       ;; initial call to internal function
+       (rep-roll 0))))
+
+
+;(repeat-roll 6)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SLOTS:
+;;
+;; Write a function that simulates a very simple $1 slot machine. Call
+;; the function with an initial amount representing the amount of credit 
+;; on a casino card. The program should welcome the gambler and then tell
+;; them what will make the machine pay out. For this $1 slot machine
+;; simulation, the goal is to come up with 3 matching digits between 1 and 3.
+;; The gambler should be asked to press "p" to play. After every play, the
+;; function should display the results like the slot machines in Vegas do
+;;
+;;                      | 1 | 3 | 3 |
+;;
+;; and then let the gambler know how much money they have remaining. If the
+;; gambler gets three of the same number, they should win some amount
+;; that is added to their credit. One dollar should be subtracted from
+;; the card for every non-winning play.
+
+;; A sample output is shown below:
+
+;Welcome to the best one-armed bandit in the casino!
+;The goal:come up with 3 matching numbers between 1 and 3!
+;
+;Press p-return to play!
+;
+;p
+;            | 3 | 1 | 1 | 
+;
+;Remaining credit = 2
+;Want to keep playing (y or n)?
+;
+;y
+;Press p-return to play!
+;
+;p
+;            | 3 | 3 | 2 | 
+;
+;Remaining credit = 1
+;
+;Want to keep playing (y or n)?
+;y
+;Press p-return to play!
+;
+;p
+;            | 2 | 2 | 3 | 
+;
+;Remaining credit = 0
+;
+;You're busted. Enjoy the nice weather
+;
+
+;;PRE-FUNCTION COMMENTS:
+; Contract: (slots money) -> number
+; Input:    money is an integer representing the number of dollars of
+;           credit the user has on their casino card.
+; Output:   The amount of money that remains on the casino card 
+; Purpose:  simulate a 1-armed bandit that matches random numbers 
+;           between 1 and 3.  The program repeats until 3 numbers
+;           match in slot machine window.
+
+(define slots
+  (lambda (money)
+    ;; slot machine takes yet another dollar
+    (printf "Welcome to the best one-armed bandit in the casino!\n")
+    (printf "The goal: come up with 3 matching numbers between 1 and 3!\n\n")
+     (letrec
+        ((LIMIT 3)
+         (play
+          (lambda (credit)
+            (printf "Remaining credit: $~a\n\n" credit)
+            (printf "Press p-return to play!\n\n")
+            ; use read without storing result to add a pause to the program
+            (read)
+            ;; define names for contents of 3 "windows" on slot machine
+            (let
+                ((win1 (add1 (random LIMIT)))
+                 (win2 (add1 (random LIMIT)))
+                 (win3 (add1 (random LIMIT))))
+              (printf "| ~a | ~a | ~a |" win1 win2 win3)
+              (cond
+              ;; base case:
+              ;; winning condition: all numbers match.
+                [(= win1 win2 win3)
+                 ;; For all three digit matches, credit the user with the
+                 ;; sum of the 3 matching numbers * 10: from $30 for 3 ones, up
+                 ;; to $90 for 3 threes.
+                 (printf "YOU WON $~a DOLLARS!!!!" ((* 10 (+ win1 win2 win3))))]
+              
+
+              ;; cond statement with base case all numbers match. Print 3
+              ;; windows and add the proper amount to winnings (used in
+              ;; a recursive call to inner function play
+              ;(cond
+
+                ;; recursive case 1:
+                  
+                ;; recursive case 2:
+                ;; keep playing because current numbers don't match.
+                
+                 ;; if the credit amount drops to $0, it should stop repeating.
+              ))
+      ;; initial call to play function
+
+
+;(slots 5)
+
+

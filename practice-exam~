@@ -1,0 +1,10 @@
+(define sum-square-diff
+  (lambda (vnum k)
+    (let
+        ((vlist (vector->list vnum)))
+      (apply + (map (lambda (x) (* (- x k) (- x k))) vlist)))))
+
+(check-expect (sum-square-diff (vector) 17) 0)
+(check-expect (sum-square-diff (vector) 0) 0)
+(check-expect (sum-square-diff (vector 2 4 6) 4) 8)
+(check-expect (sum-square-diff (vector 1 2) -1) 13)

@@ -1,0 +1,141 @@
+;; CS101, Spring 2019
+;; Lab 7
+
+(require test-engine/racket-tests)
+
+(display "\n         CS101 Lab 7, SPRING 2019")
+(display "\n       Benjamin Prud'homme\n\n")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function to play Guess The Number with the computer.  The game
+;; goes as follows:  The computer generates a random number between 1 and
+;; 100 and then asks the user to guess the number.  The program should 
+;; allow the user to continue guessing numbers until they guess the correct
+;; number. The contract is given for you and the function is started.
+
+(display "
+; Contract: (guess-the-number) -> void; side-effect printing
+; Input:    none; only reading values from user 
+; Purpose:  Guess the number generated at random by the computer.
+\n")
+
+; Pre-function tests: None possible due to only side effect printing and
+;                     reading from the user.
+
+; Function definition (uncomment the first 6 lines to get started):
+(define guess-the-number
+  (lambda ()
+    ; 1. Give user instructions
+    (printf "~%I (the computer) will think of a number. Umm... got it!~%~%")
+    (printf "Type a number between 1 and 100 and I'll give you hints~%")
+    (printf "to let you know if the correct answer is higher or lower.~%")
+    
+    (letrec
+        ; 2. Computer "chooses" a number between 1 and 100
+        ((answer (add1 (random 100)))
+         ; 3. Define a local function to loop until the correct answer is guessed
+         (make-guess (lambda ()
+                       ; 4. Prompt for the user's guess
+                       (printf "Guess a number: ")
+                       (let
+                           ; 5. Read the guess.
+                           ((guess (read)))
+                         (cond
+                           [(= guess answer)
+                            ; 6. if guess equals the correct answer, give them feedback.
+                            (printf "~a is correct! Nice job!!\n" guess)]
+                           [(< guess answer)
+                            ; 7. if guess is less than correct answer, tell user to
+                            ;    guess higher and call internal function
+                            (printf "~a is too low, try again.\n" guess) (make-guess)]
+                           ; 8. if guess is greater than correct answer, tell user to
+                           ;    guess lower and call internal function
+                           [(> guess answer)
+                            (printf "~a is too high, try again.\n" guess) (make-guess)])))))
+      ; 9. Initial call to internal function
+      (make-guess))))
+
+(guess-the-number)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Change the guess-the-number function below so that it counts the number
+;; of guesses the user makes and stops them at guess 7.
+
+; Contract: (guess-the-number) -> void ; side-effect printing
+; Input:    None
+; Purpose:  Guess the number generated at random by the computer. Only
+;           LIMIT number of guesses are allowed.
+; Pre-function tests: None possible due to only side effect printing
+
+(define guess-the-number
+  (lambda ()
+    ; 1. Give user instructions
+    (printf "~%I (the computer) will think of a number. Umm... got it!~%~%")
+    (printf "Type a number between 1 and 100 and I'll give you hints~%")
+    (printf "to let you know if the correct answer is higher or lower.~%")
+    
+    (letrec
+        ; 2(a). Generate and save the random number
+        ((answer (add1 (random 100)))
+         ; 2(b). Set a local constant, LIMIT, equal to 7
+         (LIMIT 7)
+         ; 3. Define a local function to loop until the correct answer is guessed
+         (make-guess (lambda ()
+                       ()
+                       ; 4. Prompt for the user's guess
+                       (printf "Guess a number: ")
+                       (let
+                           ; 5. Read the guess.
+                           ((guess (read)))
+                         (cond
+                           [(= guess answer)
+                            ; 6. if guess equals the correct answer, give them feedback.
+                            (printf "~a is correct! Nice job!!\n" guess)]
+                           [(< guess answer)
+                            ; 7. if guess is less than correct answer, tell user to
+                            ;    guess higher and call internal function
+                            (printf "~a is too low, try again.\n" guess) (make-guess)]
+                           ; 8. if guess is greater than correct answer, tell user to
+                           ;    guess lower and call internal function
+                           [(> guess answer)
+                            (printf "~a is too high, try again.\n" guess) (make-guess)])))))
+      ; 9. Initial call to internal function
+      (make-guess))))
+
+; Function definition:
+;(define (guess-the-number)
+;    (printf "~%I (the computer) will think of a number. Umm... got it!~%~%")
+;    ; 1. Give user instructions, including the fact that they have 7 guesses
+;    (printf "Type a number between 1 and 100 and I'll give you hints~%")
+;    (printf "to let you know if the correct answer is higher or lower.~%")
+;    (printf "You have 7 guesses, starting now.~%~&")
+;
+;    ; 2(a). Generate and save the random number
+;
+;    ; 2(b). Set a local constant, LIMIT, equal to 7     
+;
+;      ; 3. Define a local function to loop until the correct answer is guessed
+; 
+;              ; 4. Check if the user already made the limit of guesses.
+;              
+;                
+;                 ; 5. Else prompt for the user's guess  
+;                
+;                 ; 6. Read the guess.
+;                 
+;                   ; 7. if guess equals the correct answer, give them feedback.
+;                   ;    and stop
+;                   
+;                     ; 8. if guess is less than correct answer, tell user to
+;                     ;    guess higher and make recursive call
+;
+;    
+;                     ; 9. if guess is greater than correct answer, tell user to
+;                     ;    guess lower and make recursive call
+;   
+;        ; 10. Call inner guessing function with initial guess number
+;        (keep-guessing 1)))))
+; 
+(newline)(newline)
+
+(test)

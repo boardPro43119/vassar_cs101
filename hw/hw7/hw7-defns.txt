@@ -1,0 +1,312 @@
+;; CMPU101 Spring 2019
+;; Assignment 7 - working with vectors
+;; Due:  May 1st at midnight
+
+(require test-engine/racket-tests)
+
+(display "
+-----------------------------------
+Assignment 7, Spring 2019
+CS101-53 
+Benjamin Prud'homme
+-----------------------------------\n")
+
+;; In the following 3 problems, I have written the algorithms I used
+;; to solve the problems. Feel free to ignore these suggestions and
+;; write your own solutions. It's OK as long as you get the desired
+;; output.
+;;
+;; To avoid losing points, please read through this file and ask any
+;; questions BEFORE starting to code. Obey all instructions for full
+;; credit. Look for the ---> below and following the directions for
+;; writing printfs to test the functions.
+;;
+;; Delete any comments that are not in your functions or describing
+;; your check-expect statements.
+;;
+
+;;Problem 1:  COUNT-DIGITS
+;;
+;; Write a function that consumes a non-negative whole number and uses a
+;; vector of length 10 to count each of the 10 possible digits in the 
+;; number (assume the number is base 10), returning the answer in a
+;; vector.
+;;
+;; Example executions:
+;; > (count-digits 34745690)
+;; (vector 1 0 0 1 2 1 1 1 0 1)
+;;
+;; > (count-digits 1234567890987654321)
+;; (vector 1 2 2 2 2 2 2 2 2 2)
+;;
+;; > (count-digits 0)
+;; (vector 1 0 0 0 0 0 0 0 0 0)
+;;
+;;
+;; In the program skeleton, below, a one-character string is called a
+;; 1-string.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PRE-FUNCTION COMMENTS:
+(display "Problem 1:
+; Contract: (count-digits num) -> vector of numbers
+; Input:    num is a non-negative whole number
+; Purpose:  count all the digits in num and return
+;           the count of each digit in a vector with
+;           10 positions.
+\n\n")
+
+;
+;;PRE-FUNCTION TESTS:
+(check-expect (count-digits! 9876) (vector 0 0 0 0 0 0 1 1 1 1)) 
+(check-expect (count-digits! 555555555) (vector 0 0 0 0 0 9 0 0 0 0)) 
+(check-expect (count-digits! 2) (vector 0 0 1 0 0 0 0 0 0 0)) 
+(check-expect (count-digits! 13456789502) (vector 1 1 1 1 1 2 1 1 1 1))
+
+;;FUNCTION DEFINITION:
+(define count-digits!
+   (lambda (num)
+     (let*
+         ;; define a vector with 10 positions for 0...9,
+         ;; containing all 0's
+         ((digit-counter (make-vector 10))
+          ;1
+          ;; define a string to hold num turned into a string)
+          (num-string (number->string num))
+          ;2
+          ;; define a list to hold the string as a list of characters
+          (digit-chars (string->list num-string))    
+          ;3
+          ;; define a list to hold the list of characters as 1-strings
+          (digit-strings (map string digit-chars))
+          ;4
+          ;; define digitlst, a list of numbers, by converting the 
+          ;; 1-strings to numbers
+          (digitlst (map string->number digit-strings)))
+          
+       ;; Go through digitlst, adding one to the number at position 
+       ;; (first digitlst) in the vector until digitlst is empty
+       (while (not (empty? digitlst))
+              (vector-set! digit-counter (first digitlst)
+                           (add1 (vector-ref digit-counter (first digitlst))))
+              (set! digitlst (rest digitlst)))
+
+       ;; return the vector
+       digit-counter)))
+
+;; Hint: turn the number into a string (1) and then turn the string 
+;;       into a list of characters (2). Next, turn the list of 
+;;       characters into a list of 1-strings, (3) and then turn the
+;;       list of 1-strings into a list of digits (4). For each element
+;;       in the list of digits, index into a vector with positions 0..9
+;;       and increment each position referenced by a digit in the
+;;       first of the digitlst as you go through the list of digits.
+;;       
+;;       Look up the make-vector, number->string, string->list,
+;;       string, and string->number functions when planning
+;;       your solution. You will probably be able to use higher
+;;       order functions for some of the conversions (but you don't
+;;       have to).
+
+(newline)(newline)
+
+;; POST-FUNCTION PRINTFS:
+(printf "(count-digits! 9876)
+should be ~a
+   and is ~a\n"
+        (vector 0 0 0 0 0 0 1 1 1 1)
+        (count-digits! 9876))
+(newline)
+
+;;---> ADD 2 MORE PRINTFS FOLLOWING FORMAT GIVEN ABOVE
+(printf "(count-digits! 555555555)
+should be ~a
+   and is ~a\n"
+        (vector 0 0 0 0 0 9 0 0 0 0)
+        (count-digits! 555555555))
+(newline)
+(printf "(count-digits! 2)
+should be ~a
+   and is ~a\n"
+        (vector 0 0 1 0 0 0 0 0 0 0)
+        (count-digits! 2))
+(newline)
+(newline)(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Problem 2:  LIST-TRUE-POSITIONS
+;;
+;; Write a function that consumes a vector of boolean values and  
+;; returns a list of the position numbers in the vector that are true.
+;; Example executions are shown below:
+;;
+;; > (list-true-positions (vector #f #t #t #f #t))
+;; (list 1 2 4)
+;;
+;; > (list-true-positions #(false false false false))
+;; empty
+;;
+;; > (list-true-positions (vector #f #f #t #t #f #t))
+;; (list 2 3 5)
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;PRE-FUNCTION COMMENTS:
+(display "Problem 2:
+;; Contract: (list-true-positions bv) -> list of natural numbers
+;; Input:    bv is a vector of boolean values
+;; Purpose:  to return a list of all the positions in the bv that are 
+;;           true
+\n\n")
+
+;; Even though this function is not marked as a destructive function, you
+;; may choose to write it with destructive operations
+
+
+;;PRE-FUNCTION TESTS:
+(check-expect (list-true-positions (vector #f #t #t #f)) (list 1 2)) 
+(check-expect (list-true-positions (vector #f #f #f #f)) '())
+(check-expect (list-true-positions (vector #t #t #f #t)) '(0 1 3))
+(check-expect (list-true-positions (vector #t #t #t #t)) '(0 1 2 3))
+(check-expect (list-true-positions (vector #t #t #f #t #t)) '(0 1 3 4))
+(check-expect (list-true-positions (vector #t #t #t #t #t #f)) '(0 1 2 3 4))
+
+;;FUNCTION DEFINITION:
+(define list-true-positions
+  (lambda (bv)
+    (let
+        ;; define a list to store the positions of true booleans in bv
+        ((true-positions '()))
+      ;; for each boolean in bv, if it is true, add its index to the
+      ;; front of true-positions
+      (dotimes (i (vector-length bv))
+               (if (boolean=? (vector-ref bv i) #t)
+                   (set! true-positions (cons i true-positions))))
+      ;; return the reversed list of true positions
+      (reverse true-positions))))
+
+;;POST-FUNCTION PRINTFS:
+(printf "(list-true-positions (vector true true false true true))
+should be ~a
+   and is ~a\n"
+        (list 0 1 3 4)
+        (list-true-positions (vector true true false true true)))
+(newline)
+
+;;---> ADD 2 MORE PRINTFS OF YOUR OWN
+(printf "(list-true-positions (vector #f #t #t #f))
+should be ~a
+   and is ~a\n"
+        (list 1 2)
+        (list-true-positions (vector #f #t #t #f)))
+(newline)
+(printf "(list-true-positions (vector #f #f #f #f))
+should be ~a
+   and is ~a\n"
+        '()
+        (list-true-positions (vector #f #f #f #f)))
+(newline)
+
+(newline) (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Problem 3: SET-MULTS-FALSE!  
+;;
+;; Write a function that consumes a vector of booleans, bv, and a number, pos, 
+;; and returns a vector of booleans in which every position that is 
+;; greater than pos and evenly divisible by pos is set to false.
+;;
+;; Example executions are shown below:
+;;
+;; > (set-mults-false! 2 (vector #t #t #t #t #t #t #t #t #t))
+;; (vector #t #t #t #t #f #t #f #t #f))
+;;
+;; > (set-mults-false! 3
+;;   (vector #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t))
+;; (vector #t #t #t #t #t #t #f #t #t #f #t #t #f #t #t #f))
+;;
+;; HINT: Suppose you defined a counter, i, to iterate over the vector
+;;       of booleans. To determine if i is evenly divisible by a position
+;        number, use
+;;                       (= (remainder i pos) 0)
+;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;PRE-FUNCTION COMMENTS:
+(display "Problem 3:
+;; Contract: (set-mults-false! pos bv) -> vector of booleans
+;; Input:    pos is a number representing a starting index that is a positive
+;;           integer >1, and bv is a vector of booleans
+;; Purpose:  mark all the positions that are multiples of pos to false
+\n\n")
+
+;; Even though this function is marked as a destructive function, you
+;; may choose to write it without destructive operations
+
+;;TWO PRE-FUNCTION TESTS:
+;;
+;; With input of 2, the function starts at (2+1) and proceeds by 
+;; marking all positions evenly divisible by 2 as false, positions 4, 6, and 8
+(check-expect 
+ (set-mults-false! 
+  2
+  ;; start looking at position 3
+  (vector #t #t #t #t #t #t #t #t #t))
+ ;; positions 4, 6, and 8 set to #f
+ (vector #t #t #t #t #f #t #f #t #f))
+
+;; With input of 3, the function starts at (3+1) and proceeds by 
+;; marking all positions evenly divisible by 3 as false, positions 6, 9, and 12
+(check-expect 
+ (set-mults-false! 
+  3 
+  ;; start looking at position 4 for multiples of 3
+  (vector #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t))
+ ;; positions 6, 9, 12, 15 set to #f
+ (vector #t #t #t #t #t #t #f #t #t #f #t #t #f #t #t #f))
+                          
+;;FUNCTION DEFINITION: 
+(define set-mults-false!
+  (lambda (pos bv)
+    (let
+        ;; define names for the length of the vector bv
+        ;; and for the counter variable i that will start
+        ;; at pos+1
+        ((bvlen (vector-length bv))
+         (i (add1 pos)))
+      ;; repeat until i = length of bv
+      (while (< i bvlen)
+             ;; check if the remainder of i divided
+             ;; by pos = 0 and, if the remainder is 0,
+             ;; set that position in bv to #f
+             (if (= (remainder i pos) 0)
+                 (vector-set! bv i #f))
+             ;; increment i 
+             (set! i (add1 i)))
+      ;; return bv after it has been mutated
+      bv)))
+           
+;;POST-FUNCTION PRINTFS:
+(printf "\n(set-mults-false! 2 (vector #t #t #t #t #t #t #t #t #t #t))
+should be ~a
+   and is ~a\n"
+        (vector #t #t #t #t #f #t #f #t #f #t)
+        (set-mults-false! 2 (vector #t #t #t #t #t #t #t #t #t #t)))
+(newline)
+
+;;---> ADD 2 MORE PRINTFS OF YOUR OWN  
+(printf "\n(set-mults-false! 3 (vector #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t))
+should be ~a
+   and is ~a\n"
+        (vector #t #t #t #t #t #t #f #t #t #f #t #t #f #t #t #f)
+        (set-mults-false! 3 (vector #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t #t)))
+(newline)
+    
+(printf "\n(set-mults-false! 2 (vector #t #f #f #f #t #t))
+should be ~a
+   and is ~a\n"
+        (vector #t #f #f #f #f #t)
+        (set-mults-false! 2 (vector #t #f #f #f #t #t)))
+(newline)
+
+(newline)(newline)
+(test)

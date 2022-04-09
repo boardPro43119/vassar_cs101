@@ -1,0 +1,273 @@
+;; CMPU101, Spring 2019 
+;; Lecture #4, Feb. 4th
+
+;; DEFINING SYMBOLS IN THE GLOBAL ENVIRONMENT
+
+;;; Consider the following expressions.  What happens when you type 
+;;; each one in the interactions window?  
+;;;
+;;;      NUM
+;;;      LAB
+;;;      THING
+;;;      THING2
+;;;      XXX
+;;;      YYY
+
+
+
+;;;  Next, consider the following expressions.  They do not generate
+;;;  any "return" value; but they do have side-effects.  Uncomment
+;;;  the following lines and then click the "Run" button.
+
+;;;  (define NUM 1000)
+;;;  (define LAB 'now)
+;;;  (define THING 'NUM)
+;;;  (define THING2 NUM)
+;;;  (define XXX (+ 2 3))
+;;;  (define YYY '(+ 2 3))
+
+;;; Nothing happened, right? But now re-type the earlier expressions
+;;; (NUM, LAB, etc.) into the Interactions window.  You shouldn't get any
+;;; errors this time because the define statements wrote the symbols
+;;; and associated values into the global environment.
+
+;;; Tricky Question: What happens to the value of THING2 when NUM is 
+;;; changed?
+
+
+
+
+;  
+;  The DEFINE special form:                        (SPECIAL FORM 1)
+;  
+;   The keyword define is called a "special form" because it is not 
+;   evaluated according to the default rule. The word define is read, 
+;   but is not looked up in the global environment (there is no entry 
+;   for keywords in that table because keywords are part of the syntax 
+;   of the language).
+;   
+;   The purpose of the define special form is to create a new entry
+;   in the global environment (GE). Specifically, for the expression 
+;   
+;                     (define X (+  5 (*  4  2  3)))
+;            
+;   the symbol X is written into the name column of the GE and the
+;   value 29 is written in the value column. The only part of 
+;   the expression that is evaluated is the 2nd subexpression, and
+;   the result of that evaluation is written in the GE as the value
+;   of X. 
+;   
+;   Evaluation of a define statement returns void and its only
+;   effect is the creation of a new name/value pair in the GE.
+;   A define statement doesn't generate any valid Racket return 
+;   type so it is said to have only a side-effect.
+;   
+;             -----------------------------------------
+;   We know, from lecture, that the GE contains many function 
+;   names...the primitive functions.
+;   
+;   How do we define our own function names? To do this, we need 
+;   to understand another special form called LAMBDA. (SPECIAL FORM 2)
+;   
+
+
+;;;   LAMBDA expressions are SPECIAL FORMS that evaluate to functions!
+;;;   Their form is inspired by Alonzo Church's Lambda Calculus.
+;;;
+;;;   The usage of the lambda special form is:  
+;;; 
+;;;          (lambda (<par_1> ... <par_N>)  ;; none of the <>'s are actually
+;;;              <body>                     ;; part of the syntax.
+;;;          )
+;;; 
+;;;   A LAMBDA (or λ) expression is the way functions are specified in Racket.
+;;;   the (<par_1> ... <par_N>) are unique names of placeholders that will be
+;;;   replaced with N actual values when the LAMBDA expression is applied
+;;;   to arguments.
+;;;
+;;;   Calling a nameless N-parameter lambda function on N input arguments 
+;;;   <arg_1> ... <arg_N> is specified below: (Notice that there must be N 
+;;;   arguments following the closing parenthesis of the lambda special form 
+;;;   because the lambda expression specifies N parameters.)
+;;;
+;;;          ((lambda 
+;;;              (<par_1> ... <par_N>)    ;; parameter list  
+;;;                 <body>)               ;; body contains parameter names 
+;;;               <arg_1> ... <arg_N>)    ;; arguments follow lambda expr
+;;;
+;;;   This function invocation obeys the Default Rule because the first
+;;;   entry (the LAMBDA expression) after the leftmost parenthesis is a 
+;;;   function. This is one of the few places where you will ever see two
+;;;   left parentheses in sequence, but you will also see that we rarely
+;;;   use unnamed lambda expressions.
+;;;   
+;;;   When evaluating the expression in the <body> of the lambda, any
+;;;   occurrence of a symbol that appears in the parameter list will 
+;;;   evaluate to the argument that follows the lambda expression and
+;;;   that matches the position of the symbol in the parameter list. 
+;;;   The arguments <arg1> ... <arg_N> are matched, in order, with the 
+;;;   parameters <par_1> ... <par_N> 
+;;; 
+;;;   Thus, the evaluation of symbols in the parameter list does NOT 
+;;;   use the Global Environment...ever. Any symbol defined in the 
+;;;   parameter list of a function OVERRIDES the value of any symbol
+;;;   of the same name in the GE.
+;;;
+;;;   In effect, the names <par_1> ... <par_N> are names that exist 
+;;;   only INSIDE THE BODY of the lambda expression.  The parameter
+;;;   names exist in the LOCAL ENVIRONMENT that is created when the
+;;;   lambda expression is called.
+;;;
+;;;   The lambda expression returns the value that results from evaluating 
+;;;   its body with the arguments substituted for the parameters.
+
+; 
+; What is the return value of the calls to unnamed lambda expressions given 
+; in (a) through (c) (the last one is a bit tricky, but each of the 
+; expressions are valid):
+; 
+; (a) ((lambda (x) (+ x 2)) 5) 
+; 
+; (b) ((λ (x y) (+ x (* y 3))) 7 4) 
+; 
+; (c) ((λ (x) ((λ (y) (* y 2)) (+ x 3))) 4)
+; 
+
+; 
+; The following are examples of well-formed (i.e., valid) lambda            
+; expressions:
+; 
+; 1) (λ () 44)                                 ;; 0-parameter expression
+; 
+; 2) (λ (x) (* x x))                           ;; ?-parameter expression
+; 
+; 3) (λ (w h) (* w h))                         ;; ?-parameter expression
+; 
+; 4) (λ (r h) (* 1/3 3.14159 r r h))           ;; ?-parameter expression
+; 
+; 5) (λ (x y z) (+ x (− y z)))                 ;; ?-parameter expression
+; 
+; In contrast, the following are examples of malformed lambda 
+; expressions:
+; 
+; 1) (λ (x y x) (* x y))
+; 
+; 2) (λ (x 10) (* x 10)) 
+; 
+; 3) (λ x)
+; 
+; Why do you think these last 3 lambda expressions are invalid?
+; 
+
+
+;  
+;   Defining functions in the GE requires using both the define and         
+;   lambda special forms. The operations in the body of the lambda expres-
+;   sion are named so that they can be performed many times without re-
+;   writing the actual operations contained in the lambda expression. 
+;   
+;   When a function is defined, the lambda expression is wrapped inside a 
+;   define statement and preceded by a name. After a lambda expression is 
+;   given a name, it is much easier to call the function, just by using its 
+;   name.
+;   
+
+
+; Example 1:  Write a lambda expression that returns the value of its
+;             single numeric argument cubed.
+;
+;((lambda (y) () 7)
+;
+;             Call this unnamed lambda expression on input value 8 instead.
+;             of 7
+;
+;             Use the define special form to name this lambda expression
+;             cube.
+
+;(define cube 
+;  (lambda (y) 
+;    ;(printf "y is = ~a.~%" y)
+;    ())) 
+;
+;
+;             Call the function cube on the input values 5, 4 and -1 (this
+;             will require 3 different calls).
+
+;(check-expect (cube 5) 125)
+;(check-expect (cube 8) 512)
+
+;(define square (lambda (x) ()))
+
+;
+; Example 2:  Write a lambda expression that takes 2 numeric arguments and
+;             returns the result of adding the square of the first argument
+;             to the cube of the second.
+;
+;(λ (x y) ())
+;
+;             Call this unnamed lambda expression on input values 7 and 9.
+;
+;(check-expect ...)
+;
+;             Use the define special form to name this lambda expression
+;             sqX+cubeY.
+;
+;(define sqX+cubeY
+
+;
+;             Call the sqX+cubeY on input values 1, 2, and 12, -3 (this
+;             will require 2 different calls).
+
+;(check-expect (sqX+cubeY 1 2) )
+;(check-expect (sqX+cubeY 12 -3) )
+
+
+;
+; Example 3:  Write a lambda expression that takes 4 numeric arguments 
+;             representing the (x,y) coordinates of 2 points in the plane
+;             and calculates the Euclidean distance between these points.
+;             The formula to calculate Euclidean distance between points
+;             (x1, y1) and (x2, y2) is (sqrt ((x1 - x2)^2 + (y1 - y2)^2))
+;
+;
+;             Call this unnamed lambda expression on input values (4, 2) and 
+;             (6, 3).
+;
+;             Use the define special form to name this lambda expression
+;             distance.
+;
+;(define distance
+;
+;             Test this expression on input values x1=0, y1=0, x2=4, y2=6.
+;             This will require only one call.
+
+
+
+;(printf "The cube of ~A is ~A.~%~%"    12     (cube 12))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PRINTF
+;;        Usage: (printf format-string expr1 ...exprn).
+;;
+;; The printf function causes the FORMAT-STRING (i.e., its first argument) to be 
+;; displayed in the Interactions Window, except that:
+;;      • each instance of the escape sequences, \n or ~%, in the format-string
+;;        are interpreted as new-line characters, and thus cause new-lines in 
+;;        the Interactions Window; 
+;;      • each instance of the escape sequences, ~A or ~a in the format-string 
+;;        are replaced by character sequences representing the values of the 
+;;        corresponding input expressions; and
+;;      • if the format-string contains n instances of ~A (or ~a), then there 
+;;        must be n expression arguments following format-string, as follows: 
+;;        (printf format-string expr_1 ...expr_n).
+;;
+;; The printf function is used extensively in today's lab.
+
+
+
+
+
+
+
+
+

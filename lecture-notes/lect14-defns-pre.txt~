@@ -1,0 +1,342 @@
+;; CS101 Lecture Notes
+;; April 3rd 2019 
+
+;; * Using list recursion to process strings and characters.
+
+(require test-engine/racket-tests)
+
+;; The following function loads the contents of a file with helper function
+(load "string-contains.txt")
+
+
+
+;; STRING RECURSION:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; BASICS OF TEXT PROCESSING - CHARACTERS AND STRINGS
+;;
+;; Every string is actually an ordered sequence of characters 
+;;
+;; The string functions used in this lecture are:
+;;
+;;    STRING-REF: consumes a string and a number and produces the char 
+;;                at position indexed by number
+
+;;    STRING:     consumes one or more characters and produces a string
+
+;;    SUBSTRING:  consumes a string and 2 natural numbers n1 and n2 and 
+;;                produces the part of the string between indices n1
+;;                and (n2 - 1) in input string
+;;                OR
+;;                consumes a string and 1 natural number n1 and produces
+;;                the part of the string from n1 to the end of the string
+
+;;    STRING-APPEND: consumes one or more strings and produces a string
+;;                that results from joining all input strings together
+
+;;    STRING-LENGTH: consumes a string and produces a number that is the
+;;                length of the string
+
+;;    STRING-CONTAINS?: Consumes a string s1 and a string s2 and returns #t
+;;                if s1 is contained entirely in s2 or they are the same.
+;;                NOTE: not defined in swindle; loaded in a file.
+
+;;    STRING->LIST:  Consumes a string and produce a list of all the chars
+;;                   in the string
+
+;;    LIST->STRING:  Consumes a list of chars and produces a string of those
+;;                   characters
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The character functions used in this lecture are:
+;;
+;;    CHAR=?     : are 2 characters equal and in the same case
+;;
+;;    CHAR-CI=?  : returns true if the alphabetic characters are equal in
+;;                 upper or lowercase
+;;
+;;    CHAR-ALPHABETIC? : returns true if character is a letter
+;;
+;;    CHAR-DOWNCASE : consumes a character and returns it in lowercase
+    
+ 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CHARACTERS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Each character literal is preceded by #\, so #\a is "a", #\A is "A", etc.
+;;
+
+;; Write a function that consumes a character and returns #t if it is a vowel
+;; and #f otherwise. 
+
+(display "
+;; Contract: (vowel-v1? x) -> boolean
+;; Input:    x = char
+;; Output:   Returns #t if x is a vowel\n\n")
+
+;; Pre-function tests:
+(check-expect (vowel-v1? #\J) #f)
+(check-expect (vowel-v1? #\i) #t)
+(check-expect (vowel-v1? #\A) #t)
+(check-expect (vowel-v1? #\1) #f)
+
+;; Function definition:
+(define vowel-v1?
+  (lambda (x)
+    (or
+      (char-ci=? x #\a)
+      (char-ci=? x #\e)
+      (char-ci=? x #\i)
+      (char-ci=? x #\o)
+      (char-ci=? x #\u))))
+
+
+;; Post-function tests:
+(printf "(vowel-v1? #\\J) should be ~a and is ~a\n"
+        #f
+        (vowel-v1? #\J))
+(printf "(vowel-v1? #\\a) should be ~a and is ~a\n"
+        #t
+        (vowel-v1? #\a))
+(printf "(vowel-v1? #\\U) should be ~a and is ~a\n"
+        #t
+        (vowel-v1? #\U))
+
+
+(newline) (newline)
+
+;; Functions for characters also include those that check for alpha-
+;; betic, lowercase, and uppercase characters, as well as functions
+;; to convert lower to uppercase and vice versa.
+
+
+;; CHARACTER FUNCTIONS ARE ESSENTIAL WHEN WORKING WITH STRINGS.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Strings are "0-based", indexed collections of characters. Each 
+;; character in the string has an index number and the index numbers of 
+;; a particular string have indices ranging from 
+;;
+;;                 0 to (sub1 (string-length str))
+
+;; The string->list function converts a string into a list of chars.
+
+;; There is also a function called list->string that consumes a
+;; list of characters and returns a string consisting of those
+;; characters. These functions allow us to easily convert strings
+;; to lists and use list operations on the strings.
+
+
+;; IN CLASS EXERCISE:
+;;
+;; MEMBER? is a function that exists in other Racket languages to determine
+;; whether an item is part of a list.  
+;;
+;; Since member? does not exist in Swindle, we will write our own version:
+
+(display "
+;; Contract: (member? item lst) -> boolean
+;; Input:    item = any valid Racket type, lst = list of anything
+;; Output:   Return #t if item is in lst and #f otherwise\n\n")
+
+;; Pre-function tests:
+;(check-expect (member? 2 '(1 3 4 5 2 6)) #t)
+;(check-expect (member? 'a '(1 3 4 5 6)) #f)
+;(check-expect (member? 2 '()) #f)
+;(check-expect (member? #\a (list #\b #\c #\A)) #f)
+;(check-expect (member? #\a (list #\b #\c #\a)) #t)
+
+;; Function definition: (using higher-order function)
+;(define member?
+;  (lambda (item lst)
+
+
+;; Post-function tests:
+;(printf "(member? 'a '(b c d a)) should be ~a and is ~a\n"
+;        #t
+;        (member? 'a '(b c d a)))
+;(printf "(member? 42 '(b c d a)) should be ~a and is ~a\n"
+;        #f
+;        (member? 42 '(b c d a)))
+;(printf "(member? #\\a (list #\\b #\\c #\\d #\\a)) should be ~a and is ~a\n" 
+;        #t
+;        (member? #\a (list #\b #\c #\d #\a)))
+;
+;(newline)(newline)
+
+;; Write a vowel checker that uses the built-in function string->list 
+;; and the member? helper function, written above, to determine if
+;; a character is a vowel.
+
+(display "
+;; Contract: (vowel-v2? x) -> boolean                          
+;; Input:    x is a char
+;; Output:   Return #t if x is a vowel and #f otherwise\n\n")
+
+;; Pre-function tests:
+;(check-expect (vowel-v2? #\J) #f)
+;(check-expect (vowel-v2? #\i) #t)
+;(check-expect (vowel-v2? #\A) #t)
+;(check-expect (vowel-v2? #\1) #f)
+
+;;; Function definition: 
+;(define vowel-v2?
+;  (lambda (x)
+    
+  
+
+
+
+;; Post-function tests:
+;(printf "(vowel-v2? #\\a) should be ~a and is ~a\n"
+;        #t
+;        (vowel-v2? #\a))
+;(printf "(vowel-v2? #\\b) should be ~a and is ~a\n"
+;        #f
+;        (vowel-v2? #\f))
+
+
+;; Writing functions that use recursion to process strings
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PALINDROME CHECKER:
+;;
+;; To solve complicated problems, a computer scientist usually plans out a 
+;; solution using "pseudo-code": a cross between code and English (or other 
+;; human language).
+;;
+
+;; The function pal? returns true if its input (all lowercase characters)
+;; is a palindrome and false otherwise
+
+(display "
+;; Contract: (pal? str) -> boolean
+;; Input:    str = string consisting of all lowercase letters
+;; Output:   Is str a palindrome? #t or #f\n\n")
+
+;; Pre-function tests:
+;(check-expect (pal? "ada") #t)
+;(check-expect (pal? "adam") #f)
+;(check-expect (pal? "") #t)
+
+;;--> Algorithm1: Use numbers to keep track of the beginning and  
+;;    end of the input string, moving the numbers closer until
+;;    they are at the same position, checking the pair of
+;;    characters for equality. LONG AND MESSY.
+;;
+;;--> Algorithm2: Since the input string must be all letters and 
+;;    all lowercase, we could compare the string to the reverse 
+;;    of the string...if only there were a built-in function to
+;;    reverse a string!  
+;;
+;;    But there is a function to reverse a list...hmmm
+
+;; Function definition:
+;(define pal?
+;  (lambda (str)
+
+;; Post-function tests:
+;(printf "(pal? \"ada\") should be ~a and is ~a\n"
+;        #t
+;        (pal? "ada"))
+;(printf "(pal? \"abba\") should be ~a and is ~a\n"
+;        #t
+;        (pal? "abba"))
+;(printf "(pal? \"mada\") should be ~a and is ~a\n"
+;        #f
+;        (pal? "mada"))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; A MORE ROBUST VERSION OF PALINDROME CHECKER CAN CONSUME ENTIRE PHRASES
+;; AND DETERMINE WHETHER THE LETTERS IN THE PHRASE FORM A PALINDROME. 
+
+;; If we had a function to remove all the non-alphabetic characters from the 
+;; input string, we could use the pal? function from above as a helper
+;; function.  But that function only works for all lowercase alphabetic 
+;; characters.  What can we do? 
+
+
+
+
+
+
+
+
+
+
+
+
+;; REMOVE THE NON-LETTERS!!!  
+(display "
+;; Contract: (remove-nonletters str) -> string
+;; Input:    str is a string
+;; Output:   return string consisting of only the letters in str
+\n\n")   
+
+;; Pre-function tests:
+;(check-expect (remove-nonletters "How many are there?") "Howmanyarethere") 
+;(check-expect (remove-nonletters "Stack cats.") "Stackcats")
+;(check-expect (remove-nonletters "") "")  
+
+;; Function definition:
+;(define remove-nonletters
+;  (lambda (str)
+
+;; Post-function tests:
+;(printf "(remove-nonletters \"Madam, I'm Adam\" should be ~a and is ~a\n"
+;        "MadamImAdam"
+;        (remove-nonletters ""))
+;(printf "(remove-nonletters \"\" should be ~a and is ~a\n"
+;        ""
+;        (remove-nonletters ""))
+;(printf "(remove-nonletters \"Stack cats.\" should be ~a and is ~a\n"
+;        "Stackcats"
+;        (remove-nonletters "Stack cats."))
+
+
+
+;; Now, how could we use the remove-nonletters function to detect a
+;; palindrome? See the palindrome? function below.
+
+(display "
+Contract: (palindrome? str) -> boolean
+Input:    str is a string
+Output:   #t if the given string is a palindrome (disregarding non-letters),
+          and #f otherwise\n\n")
+
+;; Pre-function tests:
+;(check-expect (palindrome? "A Toyota! Race fast, safe car! A Toyota!") #t)
+
+;(check-expect (palindrome? "Golf? No sir, prefer prison-flog.") #t)
+
+;(check-expect (palindrome? "Lonely Tylenol.") #t)
+
+;(check-expect (palindrome? "Stack cats") #t)
+
+;(check-expect (palindrome? "Dennis, Nell, Edna, Leon, Nedra, Anita,
+;Rolf, Nora, Alice, Carol, Leo, Jane, Reed, Dena, Dale, Basil, Rae,
+;Penny, Lana, Dave, Denny, Lena, Ida, Bernadette, Ben, Ray, Lila, Nina,
+;Jo, Ira, Mara, Sara, Mario, Jan, Ina, Lily, Arne, Bette, Dan, Reba,
+;Diane, Lynn, Ed, Eva, Dana, Lynne, Pearl, Isabel, Ada, Ned, Dee, Rena,
+;Joel, Lora, Cecil, Aaron, Flora, Tina, Arden, Noel, and Ellen sinned.") #t)
+
+;(check-expect (palindrome? "This is a palindrome?") #f) 
+
+;;; Function definition:
+;(define palindrome?
+;  (lambda (str)
+
+
+;;; Post-function tests:
+;(printf "(palindrome? \"Lonely Tylenol\") should be ~a and is ~a\n"
+;        #t
+;        (palindrome? "Lonely Tylenol"))
+;(printf "(palindrome? \"Something non-palindromic)\" should be ~a and is ~a\n"
+;        #f
+;        (palindrome? "Something non-palindromic"))
+;(printf "(palindrome? \"\")) should be ~a and is ~a\n"
+;        #t
+;        (palindrome? ""))
+
+
+(newline)(newline)
+(test)

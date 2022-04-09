@@ -1,0 +1,373 @@
+;; CMPU 101
+;; Spring 2019
+;; April 8
+
+
+(require test-engine/racket-tests)
+
+;; Chapter 17 introduces 1 special form for mutation and 3 special forms for
+;; looping, i.e., repeating blocks of code.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;    (set! var-name new-value)
+;;
+;;    returns void but has side-effect of changing the value of 
+;;    var-name in its deepest defined environment, with respect
+;;    to the environment in which the set! occurs.
+;;
+;;    Pre-condition: var-name must be a defined variable name.
+
+;; This is the basic mutator, the hallmark of destructive programming.
+;; But don't let the name fool you...this really allows us to do
+;; iteration instead of purely recursion.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; (while (cond-exp?)  
+;;    expr_1
+;;    expr_2
+;;     …
+;;    expr_k)
+;; 
+;;  Repeats all expr_i's until cond-exp? becomes #f.  The fact that
+;;  the expression will return #f implies that some value is being
+;;  mutated.
+;;
+;;  Before a while, you need to use a local statement to define the variables
+;;  used to control the loop.  When using a while loop, you only need to
+;;  repeat until the conditional_expression becomes #f.  If it never becomes
+;;  #f, the loop will not stop.  Inside the loop, you have to mutate variables
+;;  so that the loop will end.
+;;
+;; Similar to the while loop provided in many other languages.
+;;
+;; Steps:
+;; 1. Define any local variables you need before you start the while
+;;    loop (how many you need depends on problem) using a let special
+;;    form.
+;; 2. Start the while loop with a conditional expression that is initially
+;;    true.  This variable must eventually become false in order for the
+;;    loop to end.
+;; 3. Use set! statements inside the while loop to change the value of
+;;    variables and get closer to the case where the conditional statement
+;;    returns false.
+;;
+;; Similar to the while loop in Java and python.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;     (dotimes (var n)
+;;              expr1
+;;              expr2
+;;               ...
+;;              exprk )
+;;
+;; VAR is a symbol that will be the name of a counter variable in a
+;; local environment created by dotimes.
+;;
+;; N is any expression that evaluates to a non-negative integer that
+;; will specify the number of iterations to be performed
+;; by the dotimes; and the expressions, expr1, expr2, ..., exprk, are
+;; any k expressions that together constitute the body of the dotimes.
+;;
+;; The do-times will execute the expressions inside its body N
+;; times, setting the variable var equal to 0...N-1, sequentially. It
+;  cannot be written so that it stops before it has iterated N times.
+;;
+;; Similar to the for loop in Java.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;     (dolist (var lis)
+;;              expr1
+;;              expr2
+;;               ...
+;;              exprk )
+;;
+;; VAR is a symbol that will be the name of the first item in a list.
+;; LIS is the list that dolist will loop over, from the first to the
+;; last.
+;;
+;; Sort of like an iterator in Java.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Writing functions with destructive programming using while:
+;;
+(display "
+;; Contract:   (sum-iter! n) -> number
+;;--------------------------------------------------------
+;; INPUT:        N, a positive integer
+;; OUTPUT:       The sum of numbers from 1...N, a number
+;; SIDE-EFFECT:  Prints the sum after it is calculated
+\n\n")
+
+;(define sum-iter!
+;  (lambda (n)
+;; Define variables to hold the sum and the original n
+    ;; start while (> n 0)
+       ;; sum = sum + n
+       ;; n = n - 1
+    ;; 
+
+             
+;(newline)
+;(printf "Testing the SUM-ITER function.~%")
+;(printf "(sum-iter! 4)) should be ~a and is ~a\n"
+;        10
+;        (sum-iter! 4))
+;(printf "(sum-iter! 5)) should be ~a and is ~a\n"
+;        15
+;        (sum-iter! 5))
+
+(display "
+;; Contract:  (fact-iter! n) -> number
+;;--------------------------------------------------------
+;; INPUT:        N, a positive integer
+;; OUTPUT:       The product of numbers from 1...N 
+\n\n")
+
+;(check-expect (fact-iter! 4) 24)
+;(check-expect (fact-iter! 5) 120)
+;(check-expect (fact-iter! 8) 40320)
+
+;(define fact-iter!
+;  (lambda (n)
+    ;; declare base value for the fact function
+    ;; and fact accumulator for product
+    ;; while base <= n repeat
+    ;; return fact accumulator
+
+
+;(newline)
+;(printf "Testing the FACT-ITER! function.~%")
+;(printf "(fact-iter! 5) should be ~a and is ~a\n"
+;        120
+;        (fact-iter! 5))
+;(printf "(fact-iter! 4) should be ~a and is ~a\n"
+;        24
+;        (fact-iter! 4))
+;(newline)(newline)
+
+;; NAME:         INDEX-OF-NUM-ITER!
+;;--------------------------------------------------------
+;; INPUT:        LON -  list of numbers
+;;               NUM -  number to get index for
+;; OUTPUT:       Value of index
+
+;(check-expect (index-of-num-iter! '(0 2 3 4 5 6 7 8 9 10) 7) 6)
+;(check-expect (index-of-num-iter! '(42 12 55 90 32 3 2 5 7) 7) 8)
+;(check-expect (index-of-num-iter! '(0 2 3 4 5 6 7 8 9 10) 11) #f)
+
+;(define index-of-num-iter!
+;  (lambda (lon num)
+       ;; make variables for:
+       ;; index: position in the list
+       ;; answer: #f until num found or no such num in list
+       ;; continue? ;; loop control variable
+       ;; lis: copy of original list
+    ;; repeat until finding copy of num
+   
+       ;; base case 1: list is empty and num not found;
+       ;; stop while loop
+
+       ;; base case 2: found num in list; return index
+       ;; stop while loop
+
+       ;; recursive case: increment index and repeat over
+       ;; rest of list
+    ;; return answer (position of num or #f)
+
+
+;(newline)
+;(printf "Testing the INDEX-OF-NUM-ITER! function.~%")
+;(printf "(index-of-num-iter! '(0 0 0 0 5 6) 5) should be ~a and is ~a\n"
+;        4
+;        (index-of-num-iter! '(0 0 0 0 5 6) 0))
+;(printf "(index-of-num-iter! '(0 0 0 0 5 6) 0) should be ~a and is ~a\n"
+;        1
+;        (index-of-num-iter! '(0 0 0 0 5 6) 0))
+;(printf "(index-of-num-iter! '(0 0 0 0 5 6) 7) should be ~a and is ~a\n"
+;        #f
+;        (index-of-num-iter! '(0 0 0 0 5 6) 7))
+;(newline)(newline)
+
+
+
+;; NAME:         COUNT-X
+;;--------------------------------------------------------
+;; INPUT:        LOX - List of anything, X - any valid data type
+;; OUTPUT:       number of Xs in LOX
+
+;(check-expect (count-x '(0 2 3 4 5 6 2 8 2 10) 2) 3)
+;(check-expect (count-x '(42 12 55 90 32 3 2 5 7) 2) 1)
+;(check-expect (count-x '(0 2 3 4 5 6 7 8 9 10) 11) 0)
+
+;(define count-x
+;  (lambda (lox x)
+    ;; 1. set up counter variable, list to hold original list,
+    ;;    and loop control variable
+    
+      ;; 2. Start while loop with the same clauses as a
+      ;;    recursive counter. However, the only changes
+      ;;    that occur are with set!, the looping is
+      ;;    handled by the while
+      
+         ;; if list is empty, stop looping
+
+         ;; found an occurrence of x, count it and
+         ;; keep looping with rest of lox
+
+         ;; no x found, keep looping with rest of lox
+
+      ;(printf "The number of ~a's in ~a is ~a.~%" x listy num-x)
+      ;; 3. Return the count of x's
+      ;num-x)))
+
+(newline)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; NAME:         ROLL-2-DICE
+;;--------------------------------------------------------
+;; INPUT:        none
+;; OUTPUT:       a number between 1 and 12
+
+;; helper function for dice-rolling problems
+
+(define roll-2-dice
+  (lambda ()
+    (+ (add1 (random 6))
+       (add1 (random 6)))))
+
+
+;; NAME:         COUNT-ROLLS-TIL-X
+;;--------------------------------------------------------
+;; INPUT:        X - number to roll
+;; OUTPUT:       count of times it took to roll X
+
+;(define count-rolls-til-x
+  ;(lambda (x)
+  ;; 1. set up counter variable, 
+  ;;    and loop control variable
+
+    ;; 2. Start while loop such that the only changes
+    ;;    that occur are with set!, the looping is
+    ;;    handled by the while
+    
+     ;; generate and save a roll 
+    
+          ;; x is matched, stop while and add 1
+          ;; to count-r
+  
+         
+          ;; x is not matched, increment
+          ;; roll count and keep looping
+          
+    ; 3. Return the count of rolls 
+   
+ 
+                 
+;(newline)
+;(printf "Number of rolls until 2 is ~a.~%" (count-rolls-til-x 2))
+;(printf "Number of rolls until 3 is ~a.~%"(count-rolls-til-x 3))
+;(printf "Number of rolls until 4 is ~a.~%"(count-rolls-til-x 4))
+;(printf "Number of rolls until 5 is ~a.~%"(count-rolls-til-x 5))
+;(printf "Number of rolls until 6 is ~a.~%"(count-rolls-til-x 6))
+;(printf "Number of rolls until 12 is ~a.~%"(count-rolls-til-x 12))
+
+#|
+;; NAME:         GET-AVE-ROLL-COUNT
+;;--------------------------------------------------------
+;; INPUT:        X - number to roll for
+;; OUTPUT:       Average number of times to roll X over
+;;               10000 trials
+
+(define (get-ave-roll-count x)
+  ;; 1. set up counter variable (roll-tally), 
+  ;;    and loop control variable (trials-left)
+  (local [(define trials 10000)
+          (define trials-left 10000) 
+          (define roll-tally 0)]
+    ;; 2. Start while loop such that the only changes
+    ;;    that occur are with set!, the looping is
+    ;;    handled by the while
+    (while (> trials-left 0)
+           (set! roll-tally (+ roll-tally (count-rolls-til-x x)))   
+           (set! trials-left (- trials-left 1))))
+    ;; 3. Return the average number of times it takes to roll 
+    ;;    x. The exact->inexact makes the result come out as
+    ;;    a decimal, not a fraction.
+  (exact->inexact (/ roll-tally trials)))
+
+(newline)      
+(printf "Average number of 2's in 10000 trials is ~a.~%" (get-ave-roll-count 2))
+(printf "Average number of 4's in 10000 trials is ~a.~%" (get-ave-roll-count 4))
+(printf "Average number of 6's in 10000 trials is ~a.~%" (get-ave-roll-count 6))
+(printf "Average number of 8's in 10000 trials is ~a.~%" (get-ave-roll-count 8))
+
+
+
+
+;; NAME:         PRINT-AVERAGES
+;;--------------------------------------------------------
+;; INPUT:        none
+;; OUTPUT:       none
+;; SIDE-EFFECT:  print table of probability of rolling each
+;;               number possible with 2 6-sided dice.
+
+(define (print-averages)
+  ;; 1. set up loop control variables (start and end)
+  (local [(define start 2)
+          (define end 12)]
+    (printf "Number on Dice            Average number of rolls~%")
+    (printf "--------------            -----------------------~%")
+    ;; 2. Start while loop. The first thing that happens is
+    ;;    to call get-ave-roll-count for the current start.
+    ;;    start is loop control variable.
+    (while (not (= start (add1 end))) ;; end when start = 13
+           ;; store value of calling function to get averages
+           (local [(define garc (get-ave-roll-count start))]
+             ;; line up numbers by counting spaces in start;
+             ;; use one more space in printf if start < 10
+             (if (< start 10)
+                 (printf "     ~a" start)
+                 (printf "    ~a" start))
+             ;; line up numbers by counting spaces in garc;
+             ;; use one more space if garc < 10
+             (if (< garc 10)
+                 (printf "                             ~a~%" garc)
+                 (printf "                            ~a~%" garc))
+             ;; increment loop countrol
+             (set! start (add1 start)))))))
+
+(newline)
+(print-averages)
+|#
+
+;; Read chapter 18 about vectors.
+(newline)
+(newline)
+(test)             
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

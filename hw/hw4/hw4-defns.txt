@@ -1,0 +1,263 @@
+;; CMPU101 Spring 2019
+;; Assignment 4
+;; Posted March 26th
+;; Due: April 2nd, at midnight
+
+(display "
+-----------------------------------
+Assignment 4, Spring 2019
+CS101-53 
+Benjamin Prud'homme
+-----------------------------------\n")
+;; Be sure to write your name in the display statement above where it says
+;; PLEASE WRITE YOUR NAME HERE.
+
+;; READ THE DIRECTIONS IN HW4-INST.HTML AND THE DIRECTIONS IN THIS FILE
+;; BEFORE STARTING TO CODE.
+;;
+;; DELETE THE COMMENTS BETWEEN THIS LINE AND THE LINE THAT SAYS:
+;; "WRITE FUNCTION DEFINITIONS BELOW THIS LINE" BEFORE SUBMITTING YOUR
+;; SOLUTION. THERE IS A 1 POINT PENALTY FOR NOT DELETING THESE COMMENTS.
+;;
+;; PROBLEM 1: CRAPS
+;;
+;; For this problem, you will implement the game of Craps. Craps is a casino
+;; game involving repeatedly rolling a pair of 6-sided dice. 
+;;
+;; ALGORITHM FOR CRAPS:
+;; At the beginning of the game, the player rolls a pair of 6-sided dice. The
+;; result of this roll is stored in a local variable.
+;;
+;;   I) If the total of the first roll is 2, 3, or 12, the player loses. This
+;;      is called "craps."
+;;
+;;  II) If the total of the first roll is 7 or 11, the player wins. This is 
+;;      called a "natural." 
+;;
+;; III) If the total of the first roll is any other number (4 5 6 8 9 or 10) 
+;;      that number becomes the "point."
+;;
+;;      From here, the player keeps rolling dice until 
+;;       (a) the "point" value is rolled and the player wins, 
+;;           or
+;;       (b) a 7 is rolled and the player loses.
+;;
+;; You should implement the craps function as a zero-parameter function with 
+;; a cond statement to check for either result I), II), or III), above. Cases
+;; I) and II) can be written in the main craps function.
+;;
+;; If case III) occurs, you should call a one-parameter helper function called
+;; roll-for-point to implement parts III(a) and III(b).
+
+;; SAMPLE OUTPUT FROM THE CRAPS FUNCTION IS GIVEN BELOW (PAY CLOSE ATTENTION
+;; TO EXACTLY WHAT IS WRITTEN IN EACH OF THE 4 EXAMPLES BELOW). 
+;;
+;;
+;;
+;; The > is the prompt in the interactions window. The program is started
+;; by typing (craps) and return
+;;
+;; Example 1: A 3 COMES UP ON THE FIRST ROLL:  
+   ;; > (craps)
+   ;; Welcome to the luckiest craps table on the planet!             
+   ;; Ready? Press r to roll...
+   ;; r 
+   ;; You rolled: 3
+   ;; That's craps...you lose.
+
+;; Example 2: A 7 COMES UP ON THE FIRST ROLL:   
+   ;; > (craps)
+   ;; Welcome to the luckiest craps table on the planet!
+   ;; Ready? Press r to roll...
+   ;; r
+   ;; You rolled: 7
+   ;; That's a natural, you win!!!!
+
+;; Example 3: A 6 COMES UP ON THE FIRST ROLL SO THE POINT TO MATCH IS 6.
+;; IN ATTEMPTING TO MATCH THE POINT, THE USER ROLLS A 7 AND LOSES.   
+   ;; > (craps)
+   ;; Welcome to the luckiest craps table on the planet!
+   ;; Ready? Press r to roll...
+   ;; r
+   ;; You rolled: 6
+   ;; Going into roll-for-point:
+   ;;        Rolling for point 6  
+   ;;           You rolled: 8  
+   ;;        Rolling for point 6
+   ;;           You rolled: 7
+   ;;        You lose.
+
+;; Example 4: A 5 COMES UP ON THE FIRST ROLL SO THE POINT TO MATCH IS 5.
+;; IN GOING FOR THE POINT, THE USER FINALLY ROLLS A 5 AND WINS. THE
+;; COMPUTER'S RESPONSE IS ABSOLUTELY GIDDY!
+   ;; > (craps)
+   ;; Welcome to the luckiest craps table on the planet!
+   ;; Ready? Press r to roll...
+   ;; r
+   ;; You rolled: 5
+   ;; Going into roll-for-point:
+   ;;        Rolling for point 5 
+   ;;           You rolled: 4
+   ;;        Rolling for point 5 
+   ;;           You rolled: 2
+   ;;        Rolling for point 5 
+   ;;           You rolled: 8
+   ;;        Rolling for point 5 
+   ;;           You rolled: 5
+   ;;        You made your point. You win!!!
+;;
+;; As you may have noticed from the output, the user has to press r before the
+;; roll occurs in the craps function. Your program should read the user entry
+;; but you do not need to verify that the key pressed is an r or save the
+;; response, just use a read to make sure the user has responded (and note
+;; that a space is not a valid key press in this context). The response is
+;; just needed to put a suspenseful delay in the game.
+
+;;;;;;;;;;;;;;;WRITE FUNCTION DEFINITIONS BELOW THIS LINE;;;;;;;;;;;;;;;;;;;;;;
+
+(display "
+;;Contract:       (roll-2-dice) -> number 
+;;Input:          none 
+;;Output:         a random number between 2 and 12, inclusive
+\n\n")
+
+;; No tests possible due to random number generation.
+
+;; Function definition:
+(define roll-2-dice
+   (lambda ()
+     (let
+         ((d1 (add1 (random 6)))
+          (d2 (add1 (random 6))))
+       (+ d1 d2))))
+
+(display "
+;; Function definition:
+(define roll-2-dice
+   (lambda ()
+     (let
+         ((d1 (add1 (random 6)))
+          (d2 (add1 (random 6))))
+       (+ d1 d2))))
+\n\n")
+
+;; Uncomment the lines below after your function is written:
+(printf "Calling the roll-2-dice function, output is ~a\n\n" (roll-2-dice))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "
+;;Contract:     (roll-for-point point) -> none
+;;Input:        point is an integer that is in the set {4 5 6 8 9 10}
+;;Output:       none
+;;Side-Effect:  Prints the dialog between computer and user. Function
+;;              repeats until the user wins (if they roll a random number
+;;              equal to point) or loses (if they roll a random number
+;;              equal to 7).
+\n\n")
+
+;; No tests possible due to side-effect printing and random number generation.
+
+;; Function definition:
+(define roll-for-point
+   (lambda (point)
+     ;; Print out point before rolling
+     (printf "Rolling for point ~a\n" point)
+     (let
+         ;; Make the next roll, store it in a local variable
+         ((next-roll (roll-2-dice)))
+       ;; Print the next roll
+       (printf "You rolled: ~a\n" next-roll)
+       (cond
+         ;; 7: player loses
+         [(= next-roll 7) (printf "You lose.\n")]
+         ;; Point made: player wins
+         [(= next-roll point) (printf "You made your point! You win!!!!\n")]
+         ;; Neither: roll again (call roll-for-point recursively)
+         [else (roll-for-point point)]))))
+
+(display "
+;; Function definition:
+(define roll-for-point
+   (lambda (point)
+     ;; Print out point before rolling
+     (printf \"Rolling for point ~a\\n\" point)
+     (let
+         ;; Make the next roll, store it in a local variable
+         ((next-roll (roll-2-dice)))
+       ;; Print the next roll
+       (printf \"You rolled: ~a\\n\" next-roll)
+       (cond
+         ;; 7: player loses
+         [(= next-roll 7) (printf \"You lose.\\n\")]
+         ;; Point made: player wins
+         [(= next-roll point) (printf \"You made your point! You win!!!!\\n\")]
+         ;; Neither: roll again (call roll-for-point recursively)
+         [else (roll-for-point point)]))))
+\n\n")
+
+;; Uncomment the lines below after your function is written:
+(printf "Calling the roll-for-point function with input 5:\n\n")
+(roll-for-point 5)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "
+;;Contract:       (craps) -> none
+;;Input:          none; reads responses from user
+;;Output:         none
+;;Side-Effect:    Prints the dialog between computer and user as a 
+;;                side-effect.
+\n\n")
+
+;; No tests possible due to side-effect printing and random number generation.
+
+;; Function definition:
+(define craps
+   (lambda ()
+     ;; Greet the player and prompt them to roll
+     (printf "Welcome to the luckiest craps table on the planet!\n")
+     (printf "Ready? Press r to roll...\n")
+     ;; Wait for the player to press r (or any other key)
+     (read)
+     (let
+         ;; Make the first roll, store it in a local variable
+         ((first-roll (roll-2-dice)))
+          ;; Print the first roll
+          (printf "You rolled: ~a\n" first-roll)
+          (cond
+            ;; Craps: player loses
+            [(or (= first-roll 2) (= first-roll 3) (= first-roll 12))
+             (printf "That's craps... you lose.\n")]
+            ;; Natural: player wins
+            [(or (= first-roll 7) (= first-roll 11) (= first-roll 12))
+             (printf "That's a natural, you win!!!!\n")]
+            ;; Point: call roll-for-point helper function passing in first roll
+            [else (printf "Going into roll-for-point:\n") (roll-for-point first-roll)]))))
+
+(display "
+;; Function definition:
+(define craps
+   (lambda ()
+     ;; Greet the player and prompt them to roll
+     (printf \"Welcome to the luckiest craps table on the planet!\\n\")
+     (printf \"Ready? Press r to roll...\\n\")
+     ;; Wait for the player to press r (or any other key)
+     (read)
+     (let
+         ;; Make the first roll, store it in a local variable
+         ((first-roll (roll-2-dice)))
+          ;; Print the first roll
+          (printf \"You rolled: ~a\\n\" first-roll)
+          (cond
+            ;; Craps: player loses
+            [(or (= first-roll 2) (= first-roll 3) (= first-roll 12))
+             (printf \"That's craps... you lose.\\n\")]
+            ;; Natural: player wins
+            [(or (= first-roll 7) (= first-roll 11) (= first-roll 12))
+             (printf \"That's a natural, you win!!!!\\n\")]
+            ;; Point: call roll-for-point helper function passing in first roll
+            [else (roll-for-point first-roll)]))))
+\n\n")
+
+;;Uncomment the lines below after your function is written:
+(printf "Calling the craps function,\n\n")
+(craps)

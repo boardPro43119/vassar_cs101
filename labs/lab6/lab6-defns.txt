@@ -1,0 +1,319 @@
+;; CMPU 101, SPRING 2019
+;; Lab6 - March 25th
+;;
+(require test-engine/racket-tests)
+
+(display "\n         CS101 Lab 6, SPRING 2019")
+(display "\n       Benjamin Prud'homme\n\n")
+
+;
+;  The first problem is multi-part. Parts (a) and (b) will be used
+;  as helper functions in the code for Problem 1 (c).
+;
+;  The last problem is on deep (hierarchical) lists.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Problem 1 (a):
+;
+; Define a zero-parameter function called FLIP that    
+; produces either 0 or 1 at random. The contract, purpose,
+; pre-function tests, and post-function tests of this
+; function are given below, just un-comment them after
+; you have written the function.
+; 
+
+(display "
+;;Contract: (flip)  -> number
+;;Input:    none
+;;Output:   uses the random function to generate a number
+;;          that is either 0 or 1
+\n\n")
+
+;;Pre-function tests: 
+(check-within (flip) 0 1)
+(check-within (flip) 1 1)
+(check-within (flip) 0 1)
+(check-within (flip) 1 1)
+
+
+;;Function Definition:
+(define flip
+  (lambda ()
+    ;; Generate a random number, either 0 or 1
+    (random 2)))
+
+(display "
+;;Function Definition:
+(define flip
+  (lambda () (random 2)))
+\n")
+
+
+;;Post-function tests:
+(display "\n(flip)\n\n") ;;==> 0 or 1
+(flip)
+(display "\n(flip)\n\n") ;;==> 0 or 1
+(flip)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+; Problem 1 (b): 
+;  
+;  Write a function called GET-SYMBOL that takes in      
+;  a 0 or a 1 and returns either the quoted symbol 'HEAD,
+;  if the input is 0, or 'TAIL, if the input is 1.
+;
+;  Uncomment the check-expect statements and the printfs
+;  after you write and display the function.
+;  
+
+(display "
+;; Contract: (get-symbol num) -> symbol
+;; Input:    num is either 0 or 1
+;; Output:   a quoted symbol, 'HEAD if num is 0
+;;           or 'TAIL if num is 1
+\n")
+
+(check-expect (get-symbol 0) 'HEAD)
+(check-expect (get-symbol 1) 'TAIL)
+
+;;Function definition:
+(define get-symbol
+  (lambda (num)
+    (cond
+      ;; An input of 0 corresponds to HEAD
+      [(= num 0) 'HEAD]
+      ;; An input of 1 corresponds to TAIL
+      [(= num 1) 'TAIL])))
+
+
+(display "
+;;Function definition
+(define get-symbol
+  (lambda (num)
+    (cond
+      [(= num 0) 'HEAD]
+      [(= num 1) 'TAIL])))
+\n")
+
+(printf "(get-symbol 1) should be ~a and is ~a\n"
+        'TAIL
+        (get-symbol 1))
+(printf "(get-symbol 0) should be ~a and is ~a\n"
+        'HEAD
+        (get-symbol 0))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Problem 1 (c):
+;
+;   Define a 0-parameter function called FLIP-3-COINS. 
+;    
+;   IMPORTANT: Make sure your flip and get-symbol functions
+;   work before starting this function.
+;           
+;   The flip-3-coins function should have an internal accumulator
+;   function to output the number and the results of trials before
+;   three heads are flipped. The print-out from the function when 
+;   it is called in the interactions window should look like this:
+;   
+;   > (flip-3-coins)
+; 
+;   Trial 1) You got TAIL TAIL TAIL, please try again
+;
+;   Trial 2) You got HEAD HEAD TAIL, please try again
+;
+;   Trial 3) You got HEAD TAIL HEAD, please try again
+;
+;   Trial 4) You got TAIL TAIL TAIL, please try again
+;
+;   Trial 5) You got HEAD TAIL HEAD, please try again
+;
+;   Trial 6) You got HEAD TAIL TAIL, please try again
+;
+;   Trial 7) You got TAIL TAIL TAIL, please try again
+;
+;   Trial 8) You got HEAD HEAD HEAD!! Nice job!
+;
+;
+;   Your output should have the same vertical spacing as the
+;   output shown above. Note that the random number generator
+;   gives the function its only input after you start the
+;   function.
+;
+;   In this function, you should first store the value of 
+;   3 separate coin flips in local variables using a let or
+;   a let*. Remember, you need to print out the flips as
+;   symbols, so you'll need to convert the numbers you get
+;   from calling the flip function you wrote for Problem 1(a)
+;   to symbols by calling the function you wrote for Problem
+;   1(b) as helper functions.
+;
+;   The base case will occur when the flips result in 3 heads, when
+;   your function should print the trial number and the rest of the
+;   message shown above. 
+; 
+;   In the recursive case, when the flips do not result in 3 heads,
+;   use a printf to print the trial number and the result of 3 flips,
+;   (HEAD TAIL HEAD, TAIL TAIL HEAD, for example) and then call the
+;   flip-3-coins function recursively, making the appropriate
+;   change to the accumulator.
+;
+;
+(display "
+;;Contract: (flip-3-coins) --> side-effect printing
+;;Input:    None
+;;Output:   None; side-effect printing
+\n")
+
+;; No check-expects possible due to random number generation
+;; and side-effect printing
+
+;; Function Definition:
+(define flip-3-coins
+  (lambda ()
+    (letrec
+        ;; Accumulator function, which takes in the trial number
+        ((flip-3-coins-acc
+          (lambda (trial)
+            (let
+                ;; Store the values of 3 coin flips
+                ((f1 (get-symbol (flip)))
+                 (f2 (get-symbol (flip)))
+                 (f3 (get-symbol (flip))))
+              (cond
+                ;; Base case: if all 3 flips are HEADs, end here
+                [(and
+                  (symbol=? f1 'HEAD) (symbol=? f2 'HEAD) (symbol=? f3 'HEAD))
+                 (printf "\nTrial ~a) You got HEAD HEAD HEAD!! Nice job!\n"
+                         trial)]
+                ;; Recursive case: if not, try again
+                [else
+                 (printf "\nTrial ~a) You got ~a ~a ~a, please try again\n"
+                         trial f1 f2 f3)
+                 (flip-3-coins-acc (add1 trial))])))))
+      ;; Initial accumulator function call
+      (flip-3-coins-acc 1))))
+
+
+(display "
+;; Function Definition:
+(define flip-3-coins
+  (lambda ()
+    (letrec
+        ;; Accumulator function, which takes in the trial number
+        ((flip-3-coins-acc
+          (lambda (trial)
+            (let
+                ;; Store the values of 3 coin flips
+                ((f1 (get-symbol (flip)))
+                 (f2 (get-symbol (flip)))
+                 (f3 (get-symbol (flip))))
+              (cond
+                ;; Base case: if all 3 flips are HEADs, end here
+                [(and
+                  (symbol=? f1 'HEAD) (symbol=? f2 'HEAD) (symbol=? f3 'HEAD))
+                 (printf \"\\nTrial ~a) You got HEAD HEAD HEAD!! Nice job!\\n\"
+                         trial)]
+                ;; Recursive case: if not, try again
+                [else
+                 (printf \"\\nTrial ~a) You got ~a ~a ~a, please try again\\n\"
+                         trial f1 f2 f3)
+                 (flip-3-coins-acc (add1 trial))])))))
+      ;; Initial accumulator function call
+      (flip-3-coins-acc 1))))
+
+\n")
+
+;; Uncomment the lines below to run the function 3 times, with
+;; side-effect printing in the interactions window.
+(flip-3-coins)
+(newline)(newline)
+(flip-3-coins)
+(newline)(newline)
+(flip-3-coins)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+; Problem 2:
+;
+;   Define a function called LIST-CUBES* that produces the cubed value
+;   of each number in a possibly nested list to a possibly nested output
+;   list. Examples of running this function are given below:
+;
+;   (check-expect (list-cubes* '(0 1 2)) '(0 1 8))
+;   (check-expect (list-cubes* '((1))) '((1)))
+;   (check-expect (list-cubes* '(2 3 (4 -1) 5)) '(8 27 (64 -1) 125))
+;   (check-expect (list-cubes* '()) '())
+
+(display "
+Contract:  (list-cubes* lon) -> lon
+Input:     Possibly nested list of integers
+Output:    A list with same structure as lon containing all numbers
+           in lon cubed
+\n")
+;
+;   You should use the q-list? function given in lecture today and you
+;   should also write a cube function because this function is not pre-
+;   defined in Swindle.  You may choose to include all the function
+;   definitions inside the list-cubes* function.
+
+;; Helper Function Definitions:
+(define q-list?
+  (lambda (datum)
+    (or (null? datum) (cons? datum))))
+
+(define cube
+  (lambda (x) (* x x x)))
+
+;; Function Definition:
+(define list-cubes*
+   (lambda (lon)
+     (cond
+       ;; Base case: if lon is empty, end the list here
+       [(empty? lon) '()]
+       ;; Recursive case 1: if lon begins with an internal list, cube all its
+       ;; elements and add the resulting list to the external list
+       [(q-list?
+         (first lon)) (cons (list-cubes* (first lon)) (list-cubes* (rest lon)))]
+       ;; Recursive case 2: if lon begins with a number, cube it and add it to
+       ;; the external list
+       [else (cons (cube (first lon)) (list-cubes* (rest lon)))])))
+
+
+(display "
+;; Function Definition:
+(define list-cubes*
+   (lambda (lon)
+     (cond
+       ;; Base case: if lon is empty, end the list here
+       [(empty? lon) '()]
+       ;; Recursive case 1: if lon begins with an internal list, cube all its
+       ;; elements and add the resulting list to the external list
+       [(q-list?
+         (first lon)) (cons (list-cubes* (first lon)) (list-cubes* (rest lon)))]
+       ;; Recursive case 2: if lon begins with a number, cube it and add it to
+       ;; the external list
+       [else (cons (cube (first lon)) (list-cubes* (rest lon)))])))
+\n")
+
+;; Uncomment the following calls to printf after you have written
+;; the function (with either external or internal helper functions).
+(printf "(list-cubes* '(0)) should be ~a and is ~a\n"
+        '(0)
+        (list-cubes* '(0)))
+(printf "(list-cubes* '((1))) should be ~a and is ~a\n"
+        '((1))
+        (list-cubes* '((1))))
+(printf "(list-cubes* '(2 3 (4 -1) 5)) should be ~a and is ~a\n"
+        '(8 27 (64 -1) 125)
+        (list-cubes* '(2 3 (4 -1) 5)))
+(printf "(list-cubes* '()) should be ~a and is ~a\n"
+        '()
+        (list-cubes* '()))
+
+
+
+(newline)
+(newline)
+(test)

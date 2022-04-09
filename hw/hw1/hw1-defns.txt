@@ -1,0 +1,236 @@
+(require test-engine/racket-tests)
+
+(display "
+===================================================
+CMPU-101, Spring 2019
+Homework 2
+Benjamin Prud'homme
+===================================================
+")
+(newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 1:")
+(display "
+Contract: (maxx x y) --> number
+Input:    x and y are numbers.
+Output:   A number, the maximum of x and y
+")
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+(check-expect (maxx 2 3) 3)
+(check-expect (maxx 5 1) 5)
+(check-expect (maxx 4 4) 4)
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Tests:
+(check-expect (maxx 2 3) 3)
+(check-expect (maxx 5 1) 5)
+(check-expect (maxx 4 4) 4)
+")
+;; DEFINE THE MAXX FUNCTION BELOW THIS LINE
+(define maxx
+  (lambda (x y)
+    (if (> x y) x y)))
+
+;; DISPLAY THE MAXX FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function definition:
+(define maxx
+  (lambda (x y)
+    (if (> x y) x y)))
+")
+(newline)
+(newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 2:")
+(display "
+Contract:     (cake-msg p) --> number
+Input:        p is an integer.
+Output:       A number, p multiplied by the number of calories
+              per piece of cake
+Side-effect:  Prints a message that depends on p:
+              when p = 0, prints: I didn't get any cake!
+              when p = 1, prints: I ate 1 piece of cake.
+              when p = 2, prints: I ate 2 pieces of cake.
+              when p = 3, prints: I ate 3 pieces of cake.
+              ...and so on
+")
+;; WRITE THE DEFINE STATEMENT FOR THE CONSTANT VALUE 300
+;; BELOW THIS LINE
+(define calories-per-piece 300)
+;; DISPLAY THE DEFINE STATEMENT FOR THE CONSTANT VALUE 300
+;; BELOW THIS LINE
+(display "
+Constant Definition:
+(define calories-per-piece 300)
+")
+
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+(check-expect (cake-msg 0) 0)
+(check-expect (cake-msg 1) 300)
+(check-expect (cake-msg 4) 1200)
+
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Tests:
+(check-expect (cake-msg 0) 0)
+(check-expect (cake-msg 1) 300)
+(check-expect (cake-msg 4) 1200)
+")
+;; DEFINE THE cake-msg FUNCTION BELOW THIS LINE
+(define cake-msg
+  (lambda (p)
+    (cond
+      [(= p 0) (printf "I didn't get any cake!\n") 0]
+      [(= p 1) (printf "I ate 1 piece of cake.\n") calories-per-piece]
+      [else (printf "I ate ~a pieces of cake.\n" p) (* calories-per-piece p)])))
+
+;; DISPLAY THE cake-msg FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Definition:
+(define cake-msg
+  (lambda (p)
+    (cond
+      [(= p 0) \"I didn't get any cake!\\n\" 0]
+      [(= p 1) \"I ate 1 piece of cake.\\n\" calories-per-piece]
+      [else (\"I ate ~a pieces of cake.\\n\" n) (* calories-per-piece n)])))
+")
+(newline)
+(newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 3:")
+(display "
+Contract:  (quadrant x y) -> number
+Input:     x and y are two numbers
+Output:    A number specifying the quadrant in which the point lies:
+           when x and y are positive, return 1
+           when x is negative and y is positive, return 2
+           when x is negative and y is negative, return 3
+           when x is positive and y is negative, return 4
+           when either or both x and y are 0, return 0
+")
+;; WRITE THE DEFINE STATEMENTS FOR THE CONSTANT VALUES 0, 1, 
+;; 2, 3, and 4 BELOW THIS LINE
+(define axis 0)
+(define quadrant-i 1)
+(define quadrant-ii 2)
+(define quadrant-iii 3)
+(define quadrant-iv 4)
+;; DISPLAY THE DEFINE STATEMENTS FOR THE CONSTANT VALUES 0, 1,
+;; 2, 3, AND 4 BELOW THIS LINE
+(display "
+Constant Definition:
+(define axis 0)
+(define quadrant-i 1)
+(define quadrant-ii 2)
+(define quadrant-iii 3)
+(define quadrant-iv 4)
+")
+
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+(check-expect (quadrant 0 0) 0)
+(check-expect (quadrant 0 5) 0)
+(check-expect (quadrant -2 0) 0)
+(check-expect (quadrant 1 4) 1)
+(check-expect (quadrant -5 3) 2)
+(check-expect (quadrant -12 -7) 3)
+(check-expect (quadrant 9 -3) 4)
+
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Tests:
+(check-expect (quadrant 0 0) 0)
+(check-expect (quadrant 0 5) 0)
+(check-expect (quadrant -2 0) 0)
+(check-expect (quadrant 1 4) 1)
+(check-expect (quadrant 5 -6) 2)
+(check-expect (quadrant -12 -7) 3)
+(check-expect (quadrant -9 3) 4)
+")
+;; DEFINE THE quadrant FUNCTION BELOW THIS LINE
+(define quadrant
+  (lambda (x y)
+    (cond
+      [(or (= x 0) (= y 0)) axis]
+      [(and (> x 0) (> y 0)) quadrant-i]
+      [(and (< x 0) (> y 0)) quadrant-ii]
+      [(and (< x 0) (< y 0)) quadrant-iii]
+      [else quadrant-iv])))
+
+
+;; DISPLAY THE quadrant FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Definition:
+(define quadrant
+  (lambda (x y)
+    (cond
+      [(or (= x 0) (= y 0)) axis]
+      [(and (> x 0) (> y 0)) quadrant-i]
+      [(and (< x 0) (> y 0)) quadrant-ii]
+      [(and (< x 0) (< y 0)) quadrant-iii]
+      [else quadrant-iv])))
+")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 4:")
+(display "
+Contract:  (data-type-of d) -> quoted symbol
+Input:     d is any valid scheme type
+Output:    A quoted symbol (not a string) representing the data type
+           of d, one of:  number, boolean, list, symbol, string, character,
+           or unknown.
+")
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+(check-expect (data-type-of 30) 'number)
+(check-expect (data-type-of #f) 'boolean)
+(check-expect (data-type-of ()) 'list)
+(check-expect (data-type-of 'bp) 'symbol)
+(check-expect (data-type-of "Hello") 'string)
+(check-expect (data-type-of #\A) 'character)
+(check-expect (data-type-of +) 'unknown)
+
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Tests:
+(check-expect (data-type-of 30) 'number)
+(check-expect (data-type-of #f) 'boolean)
+(check-expect (data-type-of ()) 'list)
+(check-expect (data-type-of 'bp) 'symbol)
+(check-expect (data-type-of \"Hello\") 'string)
+(check-expect (data-type-of #\\A) 'character)
+(check-expect (data-type-of +) 'unknown)
+")
+;; DEFINE THE data-type-of FUNCTION BELOW THIS LINE
+(define data-type-of
+  (lambda (input)
+    (cond
+      [(number? input) 'number]
+      [(boolean? input) 'boolean]
+      [(list? input) 'list]
+      [(symbol? input) 'symbol]
+      [(string? input) 'string]
+      [(char? input) 'character]
+      [else 'unknown])))
+;; DISPLAY THE data-type-of FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW
+(display "
+Function Definition:
+(define data-type-of
+  (lambda (input)
+    (cond
+      [(number? input) 'number]
+      [(boolean? input) 'boolean]
+      [(list? input) 'list]
+      [(symbol? input) 'symbol]
+      [(string? input) 'string]
+      [(char? input) 'character]
+      [else 'unknown])))
+")
+(newline)
+(newline)
+(test)

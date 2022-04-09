@@ -1,0 +1,129 @@
+;; CS101-53, Spring 2019
+;; Lab 1, Jan. 28
+;; Evaluating, Testing, and Displaying Expressions   
+
+;; Set the language to Swindle after opening DrRacket. If you
+;; press Run, you should see the problem statements in the
+;; Interactions Window.
+
+(require test-engine/racket-tests) ;; this line allows you to test
+;; functions with the check-expect function so that the result of
+;; all check-expects are displayed at the bottom of the output.
+
+;; Functions used in this lab: display, check-expect, newline,
+;; and several numeric functions.
+
+;; In this lab, we will use the display function to print strings
+;; in the output that is written in the Interactions Window. The
+;; only argument to the display function is a string. Look at the
+;; first display statement below. If you look up \n in the help desk,
+;; you will find that it is an "escape sequence", a way to put a
+;; linefeed into side-effect printing.  Also, notice that strings are
+;; not shown with quotation marks when done as side-effect printing by
+;; the display function.
+;;
+;; Task 1:  WRITE YOUR NAME IN PLACE OF "TYPE YOUR NAME HERE" BELOW
+
+ (display "
+  ==========================================
+           CMPU-101-53, Spring 2019
+                    Lab-1 
+             Benjamin Prud'homme
+  ==========================================\n\n")   
+
+;; From the display function called above, you should note that a
+;; string can span multiple lines because linefeeds and spaces that
+;; are included in the string are included in the output.
+;;
+;; Problem 1 is done for you, you only need to uncomment the 3-line
+;; solution. A line can be uncommented by deleting the semicolon(s)
+;; at the beginning of the line.
+;;
+;; For problems 2 - 5, convert the expressions to prefix notation,
+;; write the expressions in "check-expect" function calls, 
+;; include each expression as a string in a call to the "display"
+;; function (as shown below in an Problem 1), and finally write the
+;; expression for evaluation.
+;;
+;; Insert one or more calls to the newline function, like this: (newline)
+;; after your solution to each problem. This separates the problems in
+;; the output. It is important to make your output look as neat and
+;; readable as possible.
+ 
+;;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+(display "Problem 1) : EXAMPLE of function using numbers")
+(newline)
+;;
+;; --EXAMPLE: the following expression adds numbers 40, 1, and 1
+;;   UNCOMMENT THE 3 LINES BELOW AND RUN THE FILE TO SEE THE RESULT
+(check-expect (+ 40 1 1) 42)  ; ==> testing expression
+(display "(+ 40 1 1) ==> ")
+(+ 40 1 1) ; ==> evaluates expression
+
+;; Note: To uncomment a line, just remove all semicolons from the left side.
+(newline)
+
+;; For problems 2 through 5 below, write three expressions like those
+;; shown for problem 1 in the comment box above. Save and run the file
+;; after you write each part.
+
+(display "Problem 2) : Evaluate an expression to add numbers 1 to 5")
+(newline)
+;; In the space below this problem description, write an expression to
+;; add numbers 1 through 5 in prefix notation. First, type the expression
+;; into calls to a check-expect and a display function. Lastly, type the
+;; expression for evaluation.
+(check-expect (+ 1 2 3 4 5) 15)
+(display "(+ 1 2 3 4 5) ==> ")
+(+ 1 2 3 4 5)
+(newline)
+(display "Problem 3) : Evaluate 42 - 11 - 5 - 10   ")
+(newline)
+;; Write the expression above in prefix notation.
+;; Test the expression with check-expect, include the expression
+;; in a display statement, and then type the expression for
+;; evaluation.
+(check-expect (- 42 11 5 10) 16)
+(display "(- 42 11 5 10) ==> ")
+(- 42 11 5 10)
+(newline)
+(display "Problem 4)  Evaluate (3 + 4) * (10 / 2)   ")
+(newline)
+;; Write the expression above in prefix notation.
+;; Test the expression with check-expect, include the expression
+;; in a display statement, and then type the expression for
+;; evaluation.
+(check-expect (* (+ 3 4) (/ 10 2)) 35)
+(display "((* (+ 3 4) (/ 10 2)) ==> ")
+(* (+ 3 4) (/ 10 2))
+(newline)
+(display "Problem 5) Evaluate 2 to the 8th power")
+(newline)
+;; Write the expression described above in prefix notation.
+;; Do not use the *, /, or + operator in your solution.
+;; Use the Help Desk or the primitive function listing
+;; for numbers to find a function to do exponentiation.
+;; Test the expression with check-expect, include the expression
+;; in a display statement, and then type the expression for
+;; evaluation.
+;;
+(check-expect (expt 2 8) 256)
+(display "((expt 2 8) ==> ")
+(expt 2 8)
+
+;; NOW PRESS RUN TO SEE THE RESULTS OF ALL CHECK-EXPECTS AND 
+;; DISPLAY STATEMENTS FOR PROBLEM 1 IN THE INTERACTIONS WINDOW.
+;; YOU SHOULD SEE A LINE AT THE BOTTOM OF THE IW THAT SAYS:
+;; ALL 5 TESTS PASSED!
+;;
+;; Make sure the vertical space in between the problems makes the
+;; output look neat. Each newline function used below causes a blank
+;; line in the output.
+
+;; Now go back to the lab1inst.txt file and read section 3 to
+;; submit your results.
+
+(newline)(newline)
+(test) ;; This line is needed to write the results of all check-
+       ;; expect statements at the end of the output.
+

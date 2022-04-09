@@ -1,0 +1,399 @@
+;; CS101, Spring 2019
+;; Introducing tail recursion
+;;
+(require test-engine/racket-tests)
+
+;; First exam will be on March 4th, during lab hours.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The problem with regular recursion
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Regular recursion leaves a sequence of "suspended operations"
+;; that can't be resolved until the base case returns a value.
+;; This can use up lots of memory because a new local environment
+;; must be stored in memory each time the function is called.
+;;
+;; To see how regular recursions works, copy a recursive function
+;; like facty into a new drracket window along with a call to facty
+;; on not-too-big a number. Choose the HtDP language "Intermediate
+;; student with lambda" and run the file. Then click on the Step
+;; icon on the upper right side of the screen. This will bring
+;; up a window in which you can watch the execution one "step"
+;; at a time. This allows you to see the build-up of suspended
+;; operations that occurs using regular recursion.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Each call to a function sets up a "local environment" for that
+;; function...an area in the computer's memory where all the
+;; information for that particular function call is stored. When
+;; many recursive calls are made, there is a chunk of memory used
+;; for each new local environment.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;
+;; There is a way to avoid leaving a trail of suspended function
+;; calls, and that involves using a technique called TAIL-
+;; RECURSION, using an added parameter called an ACCUMULATOR.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; Recall the factorial function using regular recursion:
+
+(display "
+Contract: (facty x) -> nat-num
+Input:    x is a nat-num
+Output:   a nat-num, n!.\n")
+
+; PRE-FUNCTION TESTS:
+(check-expect (facty 0) 1)
+(check-expect (facty 1) 1)
+(check-expect (facty 2) 2)
+(check-expect (facty 3) 6)
+(check-expect (facty 4) 24)
+(check-expect (facty 5) 120)
+
+(display "
+; PRE-FUNCTION TESTS:
+(check-expect (facty 0) 1)
+(check-expect (facty 1) 1)
+(check-expect (facty 2) 2)
+(check-expect (facty 3) 6)
+(check-expect (facty 4) 24)
+(check-expect (facty 5) 120) 
+")
+
+; FUNCTION DEFINITION: 
+(define (facty n)
+  (cond 
+    ;; base case: return 1 for either 1 or 0
+    [(<= n 1) 1] 
+    ;; recursive case, n! = n * (n-1)!
+    [else (* n (facty (- n 1)))]))
+
+(display "
+; FUNCTION DEFINITION: 
+(define (facty n)
+  (cond 
+    ;; base case: return 1 for either 1 or 0
+    [(<= n 1) 1] 
+    ;; recursive case, n! = n * (n-1)!
+    [else (* n (facty (- n 1)))]))
+")
+(newline)
+
+; POST-FUNCTION PRINTFs:
+(printf "(facty 0) should be ~a and is ~a\n" 
+        1
+        (facty 0))
+(printf "(facty 3) should be ~a and is ~a\n" 
+        6
+        (facty 3))
+(printf "(facty 6) should be ~a and is ~a\n\n" 
+        720
+        (facty 6))
+
+(newline) (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Summation function using regular recursion:
+;
+(display "
+Contract: (summation x) -> nat-num
+Input:    x is a nat-num
+Output:   Sum the natural numbers from 0 to x.\n")
+    
+; PRE-FUNCTION TESTS:  
+(check-expect (summation 5) 15)
+(check-expect (summation 10) 55)
+(check-expect (summation 1) 1)
+(check-expect (summation 0) 0)
+
+(display "
+; PRE-FUNCTION TESTS:  
+(check-expect (summation 5) 15)
+(check-expect (summation 10) 55)
+(check-expect (summation 1) 1)
+(check-expect (summation 0) 0)
+")
+
+    
+;;FUNCTION DEFINITION:
+(define (summation x)
+  (cond
+    ; base case, return 0
+    [(= x 0) 0]
+    ; recursive case, add n to recursive call on n-1
+    [else (+ x (summation (sub1 x)))]))
+
+(display "
+;;FUNCTION DEFINITION:
+(define (summation x)
+  (cond
+    ; base case, return 0
+    [(= x 0) 0]
+    ; recursive case, add n to recursive call on n-1
+    [else (+ x (summation (sub1 x)))]))
+")
+(newline)  
+;; POST-FUNCTION PRINTFs:  
+(printf "(summation 5) should be ~a and is ~a\n" 
+        15
+        (summation 5))
+(printf "(summation 6) should be ~a and is ~a\n" 
+        21
+        (summation 6))
+(printf "(summation 10) should be ~a and is ~a\n\n" 
+        55
+        (summation 10))
+(newline)(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Tail-recursive functions and accumulators:
+; 
+; For functions like facty and summation, the evaluation of each
+; recursive function call is suspended, pending evaluation of
+; all subsequent function calls.  For very large input values,
+; these suspended local environments can take up too much memory,
+; in which case an error occurs or your machine locks up. 
+; 
+; The term "tail-recursive" refers to the fact that the return
+; value in the recursive case is entirely contained within a
+; argument in every call a function makes to itself so that there
+; are no suspended operations. Incremental versions of the final
+; result are stored in an extra parameter called the "accumulator"
+; (or just "acc") and the final value of the accumulator parameter
+; is the answer to the problem.
+; 
+; An accumulator function can re-use the same local environment
+; for every call...writing over the last value by re-using the
+; same part of memory. 
+ 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Accumulator functions:
+; 
+; An ACCUMULATOR is an extra input parameter used to contain the
+; result of an incremental computation.     
+; 
+; Accumulators allow you to write recursive functions like facty
+; in tail-recursive fashion. We only need to introduce an
+; additional parameter to the function definition to contain the
+; accumulated value. This technique is like iteration in other
+; languages.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+; Differences between calling an accumulator-style function
+; and calling its non-accumulator counterpart:
+; 
+;   1. The base case value is passed into the function as the 
+;      inital value of the accumulator.
+;      
+;   2. The value returned in the base case clause is the 
+;      accumulator parameter value.
+;      
+;   3. The recursive case performs its operation on the
+;      accumulator value and passes the accumulator as an
+;      argument in the recursive call.
+ 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+;; Write a tail recursive version of the factorial function 
+;; using an accumulator.
+
+(display "
+Contract: (facty-accumulator x) -> nat-num
+Input:    x is a nat-num
+Output:   x!.\n")
+
+; PRE-FUNCTION TESTS: 
+;(check-expect (facty-accumulator 5 1) 120)
+;(check-expect (facty-accumulator 0 1) 1)
+;(check-expect (facty-accumulator 1 1) 1)
+
+(display "
+; PRE-FUNCTION TESTS: 
+(check-expect (facty-accumulator 5 1) 120)
+(check-expect (facty-accumulator 0 1) 1)
+(check-expect (facty-accumulator 1 1) 1)
+")
+(newline)
+
+; FUNCTION DEFINITION:
+;(define (facty-accumulator num acc)
+ 
+    ;; base case:  
+    
+     ;; recursive case: 
+     
+
+; POST-FUNCTION DISPLAYS:
+;(printf "(facty-accumulator 1 1) => ~a~%"
+;        (facty-accumulator 1 1))
+;(printf "(facty-accumulator 5 1) => ~a~%"
+;        (facty-accumulator 5 1))
+;(printf "(facty-accumulator 10 1) => ~a~%"
+;        (facty-accumulator 10 1))
+
+;(newline) (newline)
+
+
+; THE UNDESIRABLE THING ABOUT ACCUMULATOR FUNCTIONS IS THAT THE
+; USER HAS TO KNOW SOMETHING ABOUT HOW THE FUNCTIONS WORK WHEN
+; THEY CALL IT WITH 2 PARAMETERS. IT WOULD BE BETTER TO USE ONLY
+; ONE PARAMETER AND KEEP THE USER FROM HAVING TO KNOW AN EXTRA
+; DETAIL OR DO EXTRA WORK WHEN CALLING THE FUNCTION.
+; 
+; THERE ARE A COUPLE OF SOLUTIONS TO THIS PROBLEM:
+;
+; 1. SOLUTION 1: WRAPPER FUNCTIONS
+; 
+;    Wrapper functions let you avoid giving the initial value of
+;    the accumulator as an argument by calling the accumulator
+;    function from within an extra function.  
+; 
+;    A wrapper function contains only a call to an accumulator 
+;    function, using the base case (stopping) value as 
+;    an argument to give the accumulator a base value.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+;; Write a tail recursive version of the factorial function 
+;; using a wrapper function:
+
+(display "
+Contract: (facty-acc-wrap x) -> nat-num
+Input:    x is a nat-num
+Output:   x!.\n\n")
+
+; PRE-FUNCTION TESTS: 
+;(check-expect (facty-acc-wrap 5) 120)
+;(check-expect (facty-acc-wrap 0) 1)
+;(check-expect (facty-acc-wrap 10) 3628800)
+
+; FUNCTION DEFINITION:
+;(define (facty-acc-wrap num)
+;; only line in body of function is call to the facty-accumulator function
+  ;; written above
+
+; POST-FUNCTION DISPLAYS:
+;(printf "(facty-acc-wrap 1) => ~a~%"
+;        (facty-acc-wrap 1))
+;(printf "(facty-acc-wrap 5) => ~a~%"
+;        (facty-acc-wrap 5))
+;(printf "(facty-acc-wrap 10) => ~a~%"
+;        (facty-acc-wrap 10))
+;(printf "(facty-acc-wrap 1) should be 1 and is ~a\n"
+;        (facty-acc-wrap 1))
+;(printf "(facty-acc-wrap 5) should be 120 and is ~a\n"
+;        (facty-acc-wrap 5))
+;(printf "(facty-acc-wrap 10) should be ~a and is ~a\n"
+;        3628800
+;        (facty-acc-wrap 10))
+
+(newline)
+(newline)
+
+
+; 2. SOLUTION 2: LOCAL FUNCTIONS
+; 
+;    Write and call the recursive function inside a function
+;    using the local special form.
+;   
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write the facty-accumulator function inside a LOCAL
+;; function.
+
+(display "
+Contract: (facty-local x) -> natural number
+Input:    x is a natural number
+Output:   x!.\n\n")
+
+;; PRE-FUNCTION TESTS: 
+;(check-expect (facty-local 5) 120)
+;(check-expect (facty-local 0) 1)
+;(check-expect (facty-local 10) 3628800)
+;
+;; FUNCTION DEFINITION:
+;(define (facty-local n)
+    
+;
+;; POST-FUNCTION DISPLAYS:
+;(printf "(facty-local 1) => ~a~%" (facty-local 1))
+;(printf "(facty-local 5) => ~a~%" (facty-local 5))
+;(printf "(facty-local 10) => ~a~%" (facty-local 10))
+
+;(newline) (newline)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The local special form is actually disguising the special
+;; forms you should know when you are working with Racket
+;; and Swindle:
+;;              LETREC
+;;              LET*
+;;              LET
+;;
+;; Read about these special forms in chapter 15 of Prof.
+;; Hunsberger's book
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; USING A LOCALLY DEFINED FUNCTION CAN ALSO ALLOW US TO SOLVE
+;; PROBLEMS THAT DO LIST RECURSION.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DATA DEFINITION FOR A LIST OF NUMBERS
+;;   A list of numbers (LON) is either
+;;   1. empty, or
+;;   2. it's a non-empty list that was made using (cons n lon),
+;;      where n is a number and lon is an LON one item
+;;      smaller than (cons n lon).
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+(display "
+Contract: (sum-all lon) -> number
+Input:    lon is a list of numbers
+Output:   a number, the sum of all the numbers in lon.\n")
+; 
+;;;Pre-function tests:
+;(check-expect (sum-all (list 2 3 5 7 11)) 28)
+;(check-expect (sum-all (list 20 21 1)) 42)    
+;(check-expect (sum-all '(9 1 13 10 9)) 42)    
+;(check-expect (sum-all empty) 0)             
+;
+;;; Function definition:
+;(define (sum-all lon)
+;
+;;;Post-function tests:
+;
+;(printf "   (sum-all '(8 4 5 3 2 4 1) should be ~a and is ~a\n\n"
+;        27 
+;        (sum-all '(8 4 5 3 2 4 1)))
+;
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function called DELETE-X that takes x, a value of a
+;; valid data type and la, a list of valid data types, and
+;; returns the list without any occurrences of x.
+(display "
+Contract: (delete-x x la) -> list of anything
+Input:    x is any data value and la is a list of anything
+Output:   a LIST of anything, missing all occurrences of x.\n")
+;
+;; Pre-function tests:
+;(check-expect (delete-x 3 '(a 4 3 5)) '(a 4 5))
+;(check-expect (delete-x 3 '()) '())
+;(check-expect (delete-x 'a '(a b c a a)) '(b c))
+;
+;; Function definition:
+;(define (delete-x x la)   
+;  
+  
+(newline)
+(newline)
+(test)  
+  
+  
+  
+  
+  
+

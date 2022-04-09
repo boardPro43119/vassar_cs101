@@ -1,0 +1,359 @@
+;; Lab 11 - Writing functions with mutation 
+;; CS101 Spring 2019
+
+(require test-engine/racket-tests)
+
+;; In this lab, you will write iterative functions that use loops
+;; instead of recursion or higher order functions.
+
+;; 1. Set up a new directory called lab11 in your cs101/labs directory.
+;; 2. Save this file in the lab11 directory.
+;; 3. When finished, get checked off and submit your solution:
+;;           submit101 w-lab11 lab11
+;;
+
+
+(display "
+-----------------------------------
+Lab 11, Spring 2019
+CS101-53 
+Benjamin Prud'homme
+-----------------------------------\n")
+
+;; The contracts are given for you. The check-expects and printfs are
+;; also written for you (where possible)!
+;;
+;; PROBLEM 1: TOSS-DIE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a helper function called TOSS-DIE that takes in no input
+;; and generates a number between 1 and 6, inclusive.  We have written
+;; functions like this many times before.
+;;
+(display "Problem 1:
+;; CONTRACT:  (toss-die) -> number between 1 and 6
+;; ---------------------------------------------------------
+;; INPUT:   none
+;; OUTPUT:  number between 1 and 6, inclusive
+\n\n")
+
+;; Function definition:
+(define toss-die
+  (lambda ()
+    (add1 (random 6))))
+
+
+;; Uncomment the lines below after your function is written:
+(printf "(toss-die) ==> ") (toss-die)
+
+(printf "(toss-die) ==> ") (toss-die)
+
+(printf "(toss-die) ==> ") (toss-die)
+(newline)
+(newline)
+
+
+;; PROBLEM 2: TOSS-UNTIL-DOUBLES-ITER
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function to continually toss two individual dice until
+;; doubles are rolled.  The function should print the values of
+;; the tosses in each iteration until the final iteration, when it
+;; prints the doubles.
+;;
+;; Example of running this code:
+;;
+;;    > (toss-until-doubles-iter)
+;;    Values rolled on iteration 1: 3, 4
+;;    Values rolled on iteration 2: 5, 2
+;;    Values rolled on iteration 3: 6, 3
+;;    Values rolled on iteration 4: 5, 5...Doubles!
+;;
+;; Can you use a do-while to do the iteration in this problem?
+;; If not, why not?
+;;
+;;
+(display "Problem 2:
+;;  CONTRACT: (toss-until-doubles-iter) ->
+;; ---------------------------------------------------------
+;;  INPUTS:  None
+;;  OUTPUT:  None
+;;  SIDE EFFECT:  Tosses a pair of six-sided dice one at a
+;;    time, repeatedly, printing out the value of each toss
+;;    along the way, until doubles are tossed.
+\n\n")
+;;
+
+;; No check-expects for toss-until-doubles-iter possible because
+;; of random number generation.
+
+; Function definition:
+(define toss-until-doubles-iter
+  (lambda ()
+    (let
+        ((die1 -1)
+         (die2 -2)
+         (roll 0))
+    (while (not (= die1 die2))
+           (newline)
+           (set! die1 (toss-die))
+           (set! die2 (toss-die))
+           (set! roll (add1 roll))
+           (printf "Values rolled on iteration ~a: ~a, ~a" roll die1 die2))
+      (printf "...Doubles!\n"))))
+
+    ;; Create a local variable that will be used to determine
+    ;; whether we keep going or stop and to keep track of the
+    ;; iteration number.
+    ;;OR
+    ;; Create 2 local variables to hold the result of tossing
+    ;; a die (make sure they are not equal initially)
+    ;; Create a counter initialized to 0 to keep track of
+    ;; iteration number
+
+             ;; Iterate:
+             ;; Generate two random tosses, and save their values...
+
+               ;; Print out the iteration number and toss values
+               
+               ;; If they came out doubles, then it's time to stop!
+
+      ;; end by printing "...Doubles!"
+
+;; Uncomment after function written:
+(printf "(toss-until-doubles-iter))") (toss-until-doubles-iter)
+(newline)
+(printf "(toss-until-doubles-iter))") (toss-until-doubles-iter)
+(newline)
+(printf "(toss-until-doubles-iter))") (toss-until-doubles-iter)
+(newline)
+
+
+;; PROBLEM 3: GEN-RAN-VEC
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function that consumes a positive whole number NUM and
+;; generates a vector of NUM random numbers between 1 and 6 (using
+;; toss-die). There is a higher-order function that will work for
+;; this, but you can also write the GEN-RAN-VEC function using
+;; iteration.
+;;
+;; Example of running this code:
+;;
+;;    > (gen-ran-vec 4) 
+;;    #(1 5 3 4)
+;;    > (gen-ran-vec 3) 
+;;    #(3 6 3)
+;;    > (gen-ran-vec 13)
+;;    #(3 5 4 2 1 6 6 3 4 2 1 1 5)
+;;
+;;
+(display "Problem 3:
+;; CONTRACT:  (gen-ran-vec num) -> vector of numbers
+;;--------------------------------------------------------------------
+;; INPUT:   NUM, a positive whole number
+;; OUTPUT:  A vector of numbers between 1 and 6, generated at random
+\n\n")
+
+;; No tests possible due to random number generation
+
+;; Function definition:
+(define gen-ran-vec
+  (lambda (num)
+    (let
+        ((vec (make-vector num)))
+    (dotimes (i num)
+             (vector-set! vec i (toss-die)))
+      vec)))
+
+
+;; Uncomment after function written:
+(printf "(gen-ran-vec 5) --> ") (gen-ran-vec 5)
+(newline)
+(printf "(gen-ran-vec 3) --> ") (gen-ran-vec 3)
+(newline)
+(printf "(gen-ran-vec 1) --> ") (gen-ran-vec 1)
+(newline)
+(newline)
+
+
+;; PROBLEM 4:  NUM-OCCURS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function that consumes a number between 1 and 6, inclusive,
+;; and a vector of numbers between 1 and 6. This function should count
+;; the number of times a particular number, target, appears in the
+;; vector.
+;;
+;; Example of running this code:
+;;
+;;    > (num-occurs 4 #(1 5 3 4 6 4 3))
+;;    2
+;;    > (num-occurs 3 #(1 5 3 2 3 4 3 6 3))
+;;    4
+;;    > (num-occurs 6 #(1 5 3 2 3 4 3 3))
+;;    0
+;;
+;; Can we use a dotimes to iterate in this problem?
+;;
+;; Hint:  Use LET to create an ACCumulator variable.
+;;        Then iterate through the vector of DICE,
+;;	  incrementing ACC whenever you come across the TARGET
+;;
+(display "Problem 4:
+;;  CONTRACT: (num-occurs target dicevec) -> number
+;; -------------------------------------------------
+;;  INPUTS:  TARGET, one of {1,2,3,4,5,6}
+;;           DICE, a vector of dice values
+;;  OUTPUT:  The number of times TARGET appears
+;;           in the DICE vector.
+\n\n")
+
+;; Check-expects for function:
+(check-expect (num-occurs 5 #(2 3 4 5 3 6 5 1)) 2)
+(check-expect (num-occurs 2 #(2 3 4 2 3 6 2 1)) 3)
+(check-expect (num-occurs 1 #(1)) 1)
+(check-expect (num-occurs 5 #(2)) 0)
+(check-expect (num-occurs 5 #()) 0)
+
+;; Function definition:
+(define num-occurs
+  (lambda (target dicevec)
+    (let
+        ((count 0)
+         (dvlen (vector-length dicevec)))
+      (dotimes (i dvlen)
+               (if (= (vector-ref dicevec i) target)
+                   (set! count (add1 count))))
+      count)))
+
+    ;; Create an accumulator, intially 0
+
+      ;; For each index I...
+      
+               ;; If the Ith slot of the DICE vector 
+               ;; contains the TARGET...
+               
+                 ;; Increment the accumulator
+               
+      ;; Return the number of times TARGET appeared
+
+
+;;Uncomment after you have written the function:
+(printf "(num-occurs 5 #(2 3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        2
+        (num-occurs 5 #(2 3 4 5 3 6 5 1)))
+(printf "(num-occurs 3 #(3 3 4 5 3 6 5 3)) should be ~a and is ~a\n"
+        4
+        (num-occurs 3 #(3 3 4 5 3 6 5 3)))
+(printf "(num-occurs 1 #(3 3 4 5 3 6 5 3)) should be ~a and is ~a\n"
+        0
+        (num-occurs 1 #(3 3 4 5 3 6 5 3)))
+
+
+
+
+;; PROBLEM 5:  COMPUTE-SCORE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function that consumes a number between 1 and 6, inclusive,
+;; and a vector of numbers between 1 and 6. This function should
+;; return the number of times a particular number, target, appears in
+;; the vector, multiplied by the target.
+;;
+;; Example of running this code:
+;;
+;;    > (compute-score 3 #(1 2 3 3 4 3 5 3 1))  <-- 3 appears 4 times
+;;    12                                        <-- 3 X 4
+;;    > (compute-score 1 #(2 3 4 5))            <-- 1 appears 0 times!
+;;    0                                         <-- 1 X 0
+;;    > (compute-score 6 #(6 6 2 6 3))          <-- 6 appears 3 times
+;;    18                                        <-- 6 X 3
+;; 
+;; HINT:  Use NUM-OCCURS as a helper.
+;;
+(display "Problem 5:
+    ;;  CONTRACT: (compute-score target dicevec) -> number
+    ;; ---------------------------------------------------
+    ;;  INPUTS:  TARGET, a number in {1,2,3,4,5,6}
+    ;;           DICEVEC, a vector of dice values (between 1 and 6)
+    ;;  OUTPUT:  The number of times TARGET appears in DICEVEC
+    ;;           multiplied by TARGET.
+\n\n")
+
+;; Check-expects for function:
+(check-expect (compute-score 5 #(2 3 4 5 3 6 5 1)) 10)
+(check-expect (compute-score 2 #(2 3 4 2 3 6 2 1)) 6)
+(check-expect (compute-score 1 #(1)) 1)
+(check-expect (compute-score 5 #(2)) 0)
+(check-expect (compute-score 5 #()) 0)
+
+;; Function definition:
+(define compute-score
+  (lambda (target dicevec)
+    (* (num-occurs target dicevec) target)))
+
+;; Uncomment after you have written function
+(printf "(compute-score 5 #(2 3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        10
+        (compute-score 5 #(2 3 4 5 3 6 5 1)))
+(printf "(compute-score 3 #(2 3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        6
+        (compute-score 3 #(2 3 4 5 3 6 5 1)))
+(newline)
+(newline)
+
+
+;; PROBLEM 6:  VEC-INDEX-OF
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a function that consumes a VALUE of any type and a vector
+;; VECT containing any valid types, and returns the index of the
+;; first position at which VALUE is found in VECT. 
+;;
+;;  Here are some examples of its use:
+;;    > (vec-index-of 'x #(a b c x y z 7 x))
+;;    3
+;;    > (vec-index-of 'z #(a b 3 x 1 z x x))
+;;    5
+;;    > (vec-index-of 'w #(a b c x y z x x))
+;;    #f
+
+
+(display "Problem 6:
+    ;;  CONTRACT:  (vec-index-of item vect) --> number or #f
+    ;; --------------------------------------------------------------
+    ;;  INPUTS:  ITEM, anything
+    ;;           VECT, a vector
+    ;;  OUTPUT:  The index of the first position of VECT that contains
+    ;;           ITEM; or #f if ITEM does not appear in VECT.
+\n\n")
+
+;; Check-expects for function:
+(check-expect (vec-index-of 5 #(2 3 4 5 3 6 5 1)) 3)
+(check-expect (vec-index-of 2 #(2 3 4 2 3 6 2 1)) 0)
+(check-expect (vec-index-of 1 #(0)) #f)
+(check-expect (vec-index-of 5 #(2)) #f)
+(check-expect (vec-index-of 1 #(1)) 0)
+
+;;Function definition:
+(define vec-index-of
+  (lambda (item vect)
+    (let
+        ((vlen (vector-length vect))
+         (result #f)
+         (i 0))
+      (while (and (eq? result #f) (< i vlen))
+             (if (eq? item (vector-ref vect i))
+                 (set! result i))
+             (set! i (add1 i)))
+      result)))
+
+;; Uncomment after you have written function:
+(printf "(vec-index-of 5 #(2 3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        3
+        (vec-index-of 5 #(2 3 4 5 3 6 5 1)))
+(printf "(vec-index-of 4 #(2 3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        2
+        (vec-index-of 4 #(2 3 4 5 3 6 5 1)))
+(printf "(vec-index-of 2 #(3 4 5 3 6 5 1)) should be ~a and is ~a\n"
+        #f
+        (vec-index-of 2 #(3 4 5 3 6 5 1)))
+        
+(newline)
+(newline)
+(test)

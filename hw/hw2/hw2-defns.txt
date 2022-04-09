@@ -1,0 +1,242 @@
+; CS101, Spring 2019
+; Assignment 2
+; Posted: 2/15/19
+; Due: 2/20/19
+
+(require test-engine/racket-tests)
+
+(display "
+===================================================
+CMPU-101, Spring 2019
+Homework 2
+Benjamin Prud'homme
+===================================================
+")
+(newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 1:\n")
+(display "
+Contract: (age-group yrs) --> string
+Input:    yrs is an integer > 0 that is a person's age.
+Output:   A string, the description of the group a person belongs to vis-a-
+          vis the yrs parameter:
+          \"toddler\" if age is less than 3
+          \"child\" if age is at least 3, but less than 13,
+          \"teenager\" if age is at least 13 but less than 20,
+          \"adult\" if age is at least 20 but less than 65, and
+          \"senior\" if age is 65 or older.
+")
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+;; Write a test for every group listed above.
+(check-expect (age-group 2) "toddler")
+(check-expect (age-group 8) "child")
+(check-expect (age-group 15) "teenager")
+(check-expect (age-group 38) "adult")
+(check-expect (age-group 70) "senior")
+
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW.
+;; Remember to type a \" for any quotation mark inside a string.
+(display "
+Function Tests:
+(check-expect (age-group 2) \"toddler\")
+(check-expect (age-group 8) \"child\")
+(check-expect (age-group 15) \"teenager\")
+(check-expect (age-group 38) \"adult\")
+(check-expect (age-group 70) \"senior\")
+")
+
+;; DEFINE THE AGE-GROUP FUNCTION BELOW THIS LINE
+(define age-group
+  (lambda (yrs)
+    (cond
+      [(< yrs 3) "toddler"]
+      [(< yrs 13) "child"]
+      [(< yrs 20) "teenager"]
+      [(< yrs 65) "adult"]
+      [else "senior"])))
+
+;; DISPLAY THE AGE-GROUP FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW:
+;; Remember to type a \" for any quotation mark inside a string.
+;; 
+(display "
+Function definition:
+(define age-group
+  (lambda (yrs)
+    (cond
+      [(< yrs 3) \"toddler\"]
+      [(< yrs 13) \"child\"]
+      [(< yrs 20) \"teenager\"]
+      [(< yrs 65) \"adult\"]
+      [else \"senior\"])))
+")
+(newline)
+(newline)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "Problem 2:\n\n")
+(display "
+Contract:  (register frst mi lst) -> string
+Input:     frst, mi, and lst are strings
+Output:    A string arranged as follows
+           When mi is not an empty string, return the string
+           \"lst, frst mi.\" 
+           otherwise, when mi is the empty string, return the
+           string \"lst, frst\" (no period at the end).
+")
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+;; Write a test for a name that has a middle initial and one that
+;; does not have a middle intial.
+(check-expect (register "Jane" "E" "Doe") "Doe, Jane E.")
+(check-expect (register "Sally" "" "Forth") "Forth, Sally")
+(check-expect (register "Ulysses" "S" "Grant") "Grant, Ulysses S.")
+(check-expect (register "Santa" "" "Claus") "Claus, Santa")
+(check-expect (register "" "" "") ", ")
+
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW.
+;; Remember to type a \" for any quotation mark inside a string.
+(display "
+Function Tests:
+(check-expect (register \"Jane\" \"E\" \"Doe\") \"Doe, Jane E.\")
+(check-expect (register \"Sally\" \"\" \"Forth\") \"Forth, Sally\")
+(check-expect (register \"Ulysses\" \"S\" \"Grant\") \"Grant, Ulysses S.\")
+(check-expect (register \"Santa\" \"\" \"Claus\") \"Claus, Santa\")
+(check-expect (register \"\" \"\" \"\") \", \")
+")
+
+;; DEFINE THE register FUNCTION BELOW THIS LINE
+(define register
+  (lambda (frst mi lst)
+    (if (= (string-length mi) 0)
+        (string-append lst ", " frst)
+        (string-append lst ", " frst " " mi "."))))
+
+;; DISPLAY THE register FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW:
+;; Remember to type a \" for any quotation mark inside a string.
+;; 
+(display "
+Function definition:
+(define register
+  (lambda (frst mi lst)
+    (if (= (string-length mi) 0)
+        (string-append lst \", \" frst)
+        (string-append lst \", \" frst \" \" mi \".\"))))
+")
+(newline)
+(newline)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display "\nProblem 3:\n\n")
+(display "
+  Contract:  (any-syms? lsym) --> boolean
+  Inputs:    LSYM, a list of any valid scheme data types
+  Output:    a boolean: #t if LSYM contains a symbol and
+             false otherwise.
+")
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+;; Write a test for a list that contains a symbol and one
+;; for a list that does not contain a symbol (remember to
+;; also test the empty list).
+(check-expect (any-syms? empty) #f)
+(check-expect (any-syms? (list "Maxine" 82 'abc)) #t)
+(check-expect (any-syms? '(a b c d)) #t)
+(check-expect (any-syms? '(1 2 6 "snake" 4 3)) #f)
+
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW.
+;; Remember to type a \" for any quotation mark inside a string.
+(display "
+Function Tests:
+(check-expect (any-syms? empty) #f)
+(check-expect (any-syms? (list \"Maxine\" 82 'abc)) #t)
+(check-expect (any-syms? '(a b c d)) #t)
+(check-expect (any-syms? '(1 2 6 \"snake\" 4 3)) #f)
+")
+
+;; DEFINE THE any-syms? FUNCTION BELOW THIS LINE
+(define any-syms?
+  (lambda (lsym)
+    (cond
+      [(empty? lsym) #f]
+      [(symbol? (first lsym)) #t]
+      [else (any-syms? (rest lsym))])))
+
+;; DISPLAY THE any-syms FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW:
+;; Remember to type a \" for any quotation mark inside a string.
+;; 
+(display "
+Function definition:
+(define any-syms?
+  (lambda (lsym)
+    (cond
+      [(empty? lsym) #f]
+      [(symbol? (first lsym)) #t]
+      [else (any-syms? (rest lsym))])))
+")
+(newline)
+(newline)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(printf "\nProblem 4:\n\n")
+
+(display "
+  Contract:  (all-syms? lsym) --> boolean
+  Inputs:    LSYM, a list of any valid scheme data types
+  Output:    a boolean: #t if LSYM contains a symbol and
+             false otherwise.
+")
+;; WRITE THE CHECK-EXPECT STATEMENTS BELOW THIS LINE
+;; Write a test for a list that contains all symbols, one
+;; for a list that does not contain a symbol (remember to
+;; also test the empty list), and one for the empty list.
+(check-expect (all-syms? empty) #f)
+(check-expect (all-syms? (list "Maxine" 82 'abc)) #f)
+(check-expect (all-syms? '(a b c d)) #t)
+(check-expect (all-syms? '(1 2 6 "snake" 4 3)) #f)
+
+;; DISPLAY THE CHECK-EXPECT STATEMENTS INSIDE THE
+;; CALL TO THE display FUNCTION BELOW.
+;; Remember to type a \" for any quotation mark inside a string.
+(display "
+Function Tests:
+(check-expect (all-syms? empty) #f)
+(check-expect (all-syms? (list \"Maxine\" 82 'abc)) #f)
+(check-expect (all-syms? '(a b c d)) #t)
+(check-expect (all-syms? '(1 2 6 \"snake\" 4 3)) #f)
+")
+
+;; DEFINE THE all-syms? FUNCTION BELOW THIS LINE
+(define all-syms?
+  (lambda (lsym)
+    (cond
+      [(empty? lsym) #f]
+      [(not (symbol? (first lsym))) #f]
+      [(empty? (rest lsym)) #t]
+      [else (all-syms? (rest lsym))])))
+
+;; DISPLAY THE all-syms FUNCTION INSIDE THE
+;; CALL TO THE display FUNCTION BELOW:
+;; Remember to type a \" for any quotation mark inside a string.
+;; 
+(display "
+Function definition:
+(define all-syms?
+  (lambda (lsym)
+    (cond
+      [(empty? lsym) #f]
+      [(not (symbol? (first lsym))) #f]
+      [(empty? (rest lsym)) #t]
+      [else (all-syms? (rest lsym))])))
+")
+(newline)
+(newline)
+(test)

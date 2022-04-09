@@ -1,0 +1,250 @@
+Welcome to DrRacket, version 7.2 [3m].
+Language: Swindle; memory limit: 128 MB.
+
+-----------------------------------
+Assignment 6, Spring 2019
+CS101-53
+Benjamin Prud'homme
+-----------------------------------
+
+Lab 8 Definitions:
+
+-----------------------------------
+Lab 8, Spring 2019
+CS101-53 
+Benjamin Prud'homme
+-----------------------------------
+
+
+Problem 1 - SPACE-BASES
+
+Contract:  (space-bases str)
+Input:     STR is a string
+Output:    Same characters as in STR, but in uppercase, with each separated
+           by a space
+
+(space-bases "AcGT") should be  A  C  G  T  and is  A  C  G  T 
+(space-bases "cat") should be  C  A  T  and is  C  A  T 
+(space-bases "") should be  and is 
+
+
+Problem 2: CONVERT-TO-COMPLEMENT
+
+Contract:  (convert-to-complement bases) -> string
+Input:     BASES, uppercase string that is a sequence of A C T and G
+Output:    A string containing the uppercase complement of BASES,using the
+           rules for matching bases given above.
+
+(convert-to-complement " A  G  C  T ") should be  T  C  G  A 
+and is  T  C  G  A 
+(convert-to-complement " C  A  T ") should be  G  T  A  and is  G  T  A 
+(convert-to-complement "") should be  and is 
+
+
+Problem 3: REPEAT-STRING
+
+Contract:  (repeat-string num str) -> string
+Input:     NUM is a positive integer and STR is a string
+Output:    Append NUM copies of STR for output string.
+
+
+(repeat-string 3 "---") should be --------- and is ---------
+(repeat-string 3 " A  T  G ") should be  A  T  G  A  T  G  A  T  G
+and is  A  T  G  A  T  G  A  T  G 
+(repeat-string 3 "   ") should be           and is          
+
+
+Problem 4: FIND-MATCHING-POS 
+
+Contract:  (find-matching-pos shrt long) -> number
+Input:     SHRT is string of ACTG's
+           LONG is a string of ACTC's such that string-length LONG
+           >= string-length SHRT
+Output:    A number representing the position in LONG at which
+           SHRT matches a substring of LONG
+
+
+(find-matching-pos "TGC" "TTATGC") should be 3 and is 3
+(find-matching-pos "GG" "CAAAGGT") should be 4 and is 4
+(find-matching-pos "TC" "TTATGC") should be -1 and is -1
+
+
+All 18 tests passed!
+
+
+;;; Contract: (valid-sequence? str) -> boolean
+;;; Input:    STR is a string of letters representing nucleotide bases  
+;;; Output:   #t if the string contains only the letters a, c, g, t, in
+;;;           either lower or uppercase, and #f if any of the characters
+;;;           are not valid sequence letters, or if STR is empty.           
+
+
+Check-Expects:
+(check-expect (valid-sequence? "acgt") #t)
+(check-expect (valid-sequence? "acft") #f)
+(check-expect (valid-sequence? "") #f)
+(check-expect (valid-sequence? "a") #t)
+
+
+Function Definition:
+(define valid-sequence?
+  (lambda (str)
+    (letrec
+        ;; create a list of characters from the input string
+        ((seq-list (string->list (string-upcase str)))
+         ;; write an internal function to check if all the
+         ;; characters in the seq-list are valid bases
+         (validate-chars (lambda (chars)
+                           (cond
+                             [(empty? chars)
+                              #f]
+                             [(not (or (eq? (first chars) #\A)
+                                       (eq? (first chars) #\C)
+                                       (eq? (first chars) #\G)
+                                       (eq? (first chars) #\T)))
+                              #f]
+                             [(= (length chars) 1) #t]
+                             [else (validate-chars (rest chars))]))))
+      ;; return the result of testing if all the characters
+      ;; in seq-list to be valid bases is true
+      (validate-chars seq-list))))
+
+
+(valid-sequence? "acgt") should be #t and is #t.
+(valid-sequence? "ayrgt") should be #f and is #f.
+(valid-sequence? "") should be #f and is #f.
+
+
+; Contract: (read-sequence type) -> string
+; Input:    TYPE is a string, either "short" or "long"
+; Output:   a string, the uppercase letters of the user's
+;           entry.
+; Side-Effect: Prints and reads a DNA sequence from the user.
+
+;;Function Definition:
+(define read-sequence
+   (lambda (type)
+     ;; prompt the user for type, either "long" or "short"
+     ;; You do not need an if to check if type is "long" or
+     ;; "short". Just use type embedded in the prompt.
+     (printf "Please enter a ~a DNA sequence: " type)
+     ;; in a let, read and save the user response.
+     (let
+         ((response (read)))
+       ;; if not valid-sequence, return "Invalid sequence"
+       ;; and make a recursive call to read-sequence;
+       ;; otherwise, if the sequence is valid, return the
+       ;; user's response in all capital letters.
+       (if (not (valid-sequence? (string-upcase (symbol->string response))))  
+           (begin
+             (printf "Invalid sequence\n")
+             (read-sequence type))
+           (string-upcase (symbol->string response))))))     
+
+
+Please enter a short DNA sequence: act
+"ACT"
+Please enter a long DNA sequence: grt
+Invalid sequence
+Please enter a long DNA sequence: ggcatg
+"GGCATG"
+
+; Contract: (print-ladder sh lo pos) -> void; side-effect printing
+; Input     SH: a string, LO: a string, and POS: a number, the position 
+;           at which the complement of SH matches LO.
+; Output:   none, only side-effect printing to print SH at POS, the position
+;           in LO at which the complement of SH matches LO.
+;           Note: This function is only called if the complement of SH
+;           matches LO, as determined by find-match-pos.
+
+
+Function Definition:
+(define print-ladder
+  (lambda (sh lo pos)
+    (let
+        ((sh-spaced (space-bases sh))
+         (lo-spaced (space-bases lo)))
+      (printf (repeat-string (* pos 3) " "))
+      (printf (repeat-string (string-length sh-spaced) "-"))
+      (newline)
+      (printf (repeat-string (* pos 3) " "))
+      (printf (repeat-string (/ (string-length sh-spaced) 3) " | "))
+      (newline)
+      (printf (repeat-string (* pos 3) " "))
+      (printf sh-spaced)
+      (newline)
+      (printf lo-spaced)
+      (newline)
+      (printf (repeat-string (/ (string-length lo-spaced) 3) " | "))
+      (newline)
+      (printf (repeat-string (string-length lo-spaced) "-"))
+      (newline))))
+
+
+      ---------
+       |  |  | 
+       C  A  T 
+ A  A  G  T  A  A  A 
+ |  |  |  |  |  |  | 
+---------------------
+                  ---
+                   | 
+                   C 
+ A  A  T  A  A  A  G 
+ |  |  |  |  |  |  | 
+---------------------
+---
+ | 
+ C 
+ G  A  T  A  A  A  G 
+ |  |  |  |  |  |  | 
+---------------------
+
+
+;;; Contract: (sequence-matcher) -> void; side-effect printing
+;;; Input:    none
+;;; Purpose:  Prompt user for a long and short string of DNA
+;;;           nucleotide bases, match the complement of the
+;;;           short string to the long, and print a DNA ladder
+
+Function Definition:
+(define sequence-matcher
+   (lambda ()
+     ;; need let* here because we are using locally defined variable in
+     ;; the definition of a subsequent variable
+     (let*
+         ;; convert both short and long to uppercase before assigning
+         ;; them to variables
+         ((lo-input (read-sequence "long"))
+          (sh-input (read-sequence "short"))
+          (long lo-input)
+          (short sh-input))  
+       (printf "Long is ~a, short is ~a\n" long short)
+       (let
+           ;; save the matching position of the complement of short
+           ;; and long
+           ((match (find-matching-pos (convert-to-complement short) long)))
+         ;; match will be -1 if no matching position is found; otherwise
+         ;; match will be >= 0, in which case you should call print-ladder
+         ;; with short, long, and match as input
+         (if (= match -1)
+             (printf "No match found.\n")
+             (begin
+               (printf "~a matches ~a at position ~a\n" short long match)
+               (print-ladder short long match)))))))
+
+
+Please enter a long DNA sequence: caggttat
+Please enter a short DNA sequence: caat
+Long is CAGGTTAT, short is CAAT
+CAAT matches CAGGTTAT at position 3
+         ------------
+          |  |  |  | 
+          C  A  A  T 
+ C  A  G  G  T  T  A  T 
+ |  |  |  |  |  |  |  | 
+------------------------
+
+
+All 40 tests passed!
+> 

@@ -1,0 +1,567 @@
+;; CS101, Spring 2019 
+;; April 1, 2019
+
+(require test-engine/racket-tests)
+
+;; TOPICS FOR TODAY:
+;; * ABSTRACTING FUNCTION PATTERNS FOR GENERAL APPLICABILITY
+;; * HIGHER-ORDER FUNCTIONS
+;;   - FILTER, MAP, APPLY, BUILD-LIST, BUILD-VECTOR
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  PATTERNS YIELDING HIGHER-ORDER FUNCTIONS
+;  
+;  Consider a function that filters the numbers out of a list of any data type,
+;  keeping the numbers in a new list:
+;
+;  A LOA is either
+;  1. (empty), or
+;  2. it's a (cons x lis), where x is any data type and lis is an LOA
+
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:   (filter-nums lox) --> list of numbers
+Input:      LOX, a list of anything 
+Output:     Creates a list of only the numbers in lox.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+
+; Pre-function tests:
+(check-expect (filter-nums '(1 a 2 b 3 c 4)) '(1 2 3 4))
+(check-expect (filter-nums '()) '())
+(check-expect (filter-nums '(#t b c #f e)) '())
+(check-expect (filter-nums '(1 2 3)) '(1 2 3))
+
+;; Function definition:
+(define filter-nums
+  (lambda (lox)
+    (cond
+      ; base case: return empty if list is empty
+      [(empty? lox) '()]
+      ; recursive case 1: first is a number, cons first onto call to rest.
+      ; if (number? (first lox)) is true, (first lox) is consed onto output list
+      ; created by calling filter-nums recursively on the rest of lx  
+      [(number? (first lox))
+       (cons (first lox) (filter-nums (rest lox)))]
+      ; recursive case 2: continue through list.
+      ; since (number? (first lox)) must be false at this point, just call
+      ; filter-any recursively the rest of lox
+      [else (filter-nums (rest lox))])))
+
+
+;(newline)
+;(printf "Testing the FILTER-NUMS function:\n")
+(check-expect (filter-nums '(1 a 2 b 3 c 4)) '(1 2 3 4))
+
+(check-expect (filter-nums '()) empty)
+
+(check-expect (filter-nums '(1 1 1 1 1)) '(1 1 1 1 1))
+
+(check-expect (filter-nums '(a b c)) '())
+;(newline) 
+
+; 
+;  It may not surprise you to note that we could use ANY predicate on the 
+;  first element in recursive case 1, and construct a list of only those 
+;  items for which the predicate is true. 
+;
+;
+;  We could write a very similar function to produce only the symbols from the 
+;  input list.
+;  
+;  A list of quoted symbols (LOQS) is either:
+;  1. empty, or
+;  2. it's a (cons sym ls), where sym is a quoted symbol and ls is a LOQS
+;
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:   (filter-syms lox) --> loqs
+Input:      LOX, a list of anything 
+Output:     Creates a list of only the symbols.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+; Pre-function tests:
+(check-expect (filter-syms '(1 a 2 b 3 c 4)) '(a b c))
+(check-expect (filter-syms '()) '())
+(check-expect (filter-syms '(a b c d e)) '(a b c d e))
+(check-expect (filter-syms '(1 2 3)) '())
+
+; Function definition:
+(define filter-syms
+  (lambda (lox)
+    (cond
+      ; base case: return empty if lox is empty
+      [(empty? lox) '()]
+      ; recursive case 1: cons first onto call to rest.
+      ; if (symbol? (first lox)) is true, (first lox) is consed onto output list
+      ; created by calling filter-syms recursively on the rest of lox   
+      [(symbol? (first lox))
+       (cons (first lox) (filter-syms (rest lox)))]
+      ; recursive case 2: continue through list.
+      ; since (symbol? (first lox)) must be false at this point, just call
+      ; filter-syms recursively the rest of lox
+      [else (filter-syms (rest lox))])))  
+
+;(newline)
+;(printf "Testing the FILTER-SYMS function:\n")
+(check-expect (filter-syms '(1 a 2 b 3 c 4)) '(a b c))
+
+(check-expect (filter-syms '()) '())
+
+(check-expect (filter-syms '(1 1 1 1 1)) '())
+
+(check-expect (filter-syms '(a b c)) '(a b c))
+;(newline) 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;  USING FUNCTIONS AS INPUT PARAMETERS:
+;  
+;  One feature of languages like Racket is that functions can be passed as
+;  arguments to other functions.  Functions that consume functions are known
+;  as HIGHER-ORDER functions.
+;
+;  For example, to abstract over the filter-nums and filter-syms 
+;  functions, we could write a single function with one extra parameter to 
+;  replace the boolean function called in recursive case 1 of filter-nums 
+;  and filter-syms.
+
+;; The following function, filter-any, abstracts the filter-nums and filter-
+;; syms functions by making the predicate number? or symbol? an extra 
+;; parameter.
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Contract:  (filter-any boolean-op? lox) --> lox
+;Input:    BOOLEAN-OP?, a predicate function and LOX, a list of anything 
+;Output:   Creates a list of only the items for which booleanOp? is
+;          true.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+;; Pre-function tests:
+(check-expect (filter-any  number? '(1 a 2 b 3 c 4)) '(1 2 3 4))
+(check-expect (filter-any  symbol? '(1 a 2 b 3 c 4)) '(a b c))
+(check-expect (filter-any  string? '()) '())
+(check-expect (filter-any  string? '(1 a 2 "b" 3 c 4)) '("b"))
+(check-expect (filter-any  boolean? '(1 a 2 b #t c 4)) '(#t))
+
+;; Function definition:
+(define filter-any
+  (lambda (boolean0p? lox)
+    (cond
+      ; base case: return empty if list is empty
+      [(empty? lox) '()]
+      ; recursive case 1: cons first onto call to rest.
+      [(boolean0p? (first lox))
+       (cons (first lox) (filter-any boolean0p? (rest lox)))]
+      ; recursive case 2: continue through list.
+      [else (filter-any boolean0p?(rest lox))])))  
+
+;; Post-function printfs:
+(printf "(filter-any symbol? '(1 a 2 b 3 c 4)) --> ") 
+(filter-any symbol? '(1 a 2 b 3 c 4))
+(printf "(filter-any number? '()) --> ")
+(filter-any number? '())
+(printf "(filter-any boolean? '(1 1 #t 1 1)) --> ")
+(filter-any boolean? '(1 1 #t 1 1))
+(printf "(filter-any symbol? '(a b c)) --> ")
+(filter-any symbol?'(a b c))
+;(newline)                               
+;                                                 
+;                                                 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                                                 
+;                                                 
+;     ;;;;                                        
+;    ;; ;;          ;                             
+;    ;   ;;  ;;;;   ;     ;;                      
+;    ;       ;;;    ;     ;;                      
+;    ;;             ;     ;;        ;;;;  ;    ;;;
+;    ;;             ;     ;;       ;;;;;; ;  ;;;  
+;     ;        ;    ;     ;;      ;;   ;; ;; ;;   
+;  ;;;;;;;;   ;;    ;  ;;;;;;;;   ;;;;;   ;;;;    
+;   ;;;;      ;;    ;;  ; ;;      ;;      ;;;     
+;      ;       ;    ;;    ;;       ;;  ;;  ;;     
+;      ;;      ;    ;;    ;;    ;  ;;;;;   ;;     
+;      ;;      ;;    ;    ;;  ;;;          ;;     
+;       ;       ;    ;    ;;;;;;           ;;     
+;       ;            ;     ;;;                    
+;      ;                                          
+                                                 
+
+
+; 
+;  The filter pattern is so common that Racket provides a built-in
+;  higher-order function called FILTER that consumes a function and
+;  a list, and that returns a list containing only the elements of
+;  the list for which the function is true.
+;  
+;  **Filter always returns a LIST that is <= to the input list in length. 
+;
+;  **Filter may return a smaller list or an empty list, depending on the list
+;  contents and the predicate function.
+;  
+;(check-expect (filter   number?   '(1 a 2 b 3 c 4)) '(1 2 3 4)) 
+;(check-expect (filter   symbol?   '(1 a 2 b 3 c 4)) '(a b c))
+;(check-expect (filter   string?   '(#t "jelly" a "beans")) '("jelly" "beans"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; IN-CLASS EXAMPLES:
+;;
+;; Write a function that consumes a list of anything and produces only the
+;; even numbers in the list.  Use the filter function instead of explicit
+;; recursion.
+;;
+;; If there is not a built-in predicate function for the list you need
+;; to produce, you often need to write "nameless lambda" functions in
+;; the call to the FILTER function. The evens-only and the str-len>=num  
+;; functions, below, are examples of this strategy.
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:  (evens-only lox) --> list of even numbers
+Input:     LOX, a list of anything 
+Output:    Creates a list of only the even numbers in lox 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+; Pre-function tests:
+(check-expect (evens-only '(a g 1 4 66 'cat 'dog 20)) '(4 66 20))
+(check-expect (evens-only '(1 3 5 7 9)) '())
+(check-expect (evens-only '()) '())
+
+; Function definition:
+(define evens-only
+  (lambda (lox)
+    (filter (lambda (x) (and (number? x) (even? x))) lox)))
+
+;
+(printf "(evens-only '(a g e 4 6 1 5 8)) should be ~a and is ~a\n"
+         '(4 6 8)
+         (evens-only '(a g e 4 6 1 5 8)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Write a function that consumes a list of strings and a number and produces
+;; only the strings with length >= num.  Use the filter function instead of 
+;; explicit recursion.
+
+;; A list of strings (LOSTR) is either
+;; 1. empty,
+;; 2. or its a (cons str lst), where str is a string and lst is a LOSTR
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Contract:  (str-len>=num los num) --> los
+;Input:     los, a list of strings, and num, a non-negative integer 
+;Output:    Creates a list of only the strings for which string-length is
+;           greater than or equal to num.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+; Pre-function tests:
+(check-expect (str-len>=num '("everybody" "loves" "somebody" "sometime") 6) 
+              '("everybody" "somebody" "sometime"))
+(check-expect (str-len>=num '("hello" "my" "name" "is" "Kay") 3) 
+              '("hello" "name" "Kay"))
+(check-expect (str-len>=num '() 4) '())
+(check-expect (str-len>=num '("hello" "goodbye" "elephant" "hi") 4)
+              '("hello" "goodbye" "elephant"))
+
+;; Function definition:
+(define str-len>=num
+  (lambda (los num)
+    (filter (lambda (str) (>= (string-length str) num)) los)))
+
+    ;; write an unnamed lambda that combines use of string-length and
+    ;; relational operator
+
+
+(printf "(str-len>=num '(\"hi\" \"bye\" \"pie\" \"pile\") 4)
+         should be ~a and is ~a\n"
+        '("pile")
+        (str-len>=num '("hi" "bye" "pie" "pile") 4))
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                                  
+;  Another common pattern when we write functions over lists is to perform 
+;  some function on each element. This function that does this is called MAP,
+;  and it consumes a one-parameter function and a list and produces a list
+;  OF THE SAME LENGTH as the input list, in which each value is the result of 
+;  applying the function to each element in the input list.
+
+;                                   
+;                                   
+;                    ;;;;     ;;;;  
+;                   ;; ;;   ;;;;;;; 
+;   ;    ;   ;;    ;;   ;  ;;     ;;
+;   ;;  ;;  ;;;;   ;    ;     ;   ;;
+;   ;; ;;;; ;  ;        ;     ;;  ; 
+;   ;; ;  ;;;  ;;   ;;;;;     ;; ;; 
+;   ;;;;  ;;   ;;   ;; ;;     ;;;;  
+;    ;;   ;;   ;;  ;;  ;;;   ;;;    
+;    ;;    ;    ;  ;  ;;;;    ;;    
+;                  ;;;;;      ;;    
+;                             ;;    
+;                             ;;    
+;                             ;;    
+;                                   
+
+;  
+;  For example, to square every element in a list of numbers, we could
+;  type the following function invocation: (map  sqr  '(1 2 3 4 5))
+;
+;  The sqr function exists in Swindle but not in HtDP languages, so we
+;  can write a nameless lambda function to do the square operation, as
+;  shown below.
+;  
+(map (lambda (x) (* x x)) '(1 2 3 4)) ;=> (list (sqr 1) (sqr 2)
+;                                                (sqr 3) (sqr 4))
+;  
+;  The map function always produces a LIST that is the same length as
+;  its input list.
+; 
+
+(check-expect (map (lambda (x) (* x x))  '(1 2 3 4 5)) '(1 4 9 16 25))
+(check-expect (map add1 '(1 2 3 4 5)) '(2 3 4 5 6))
+(check-expect (map number? '(1 2 3 4 5)) '(#t #t #t #t #t))
+
+;; IN THE FUNCTION BELOW, USE MAP TO SQUARE EACH NUMBER AND THEN USE 
+;; EXPLICIT LIST RECURSION TO ADD THE RESULT OF SQUARING EACH NUMBER.
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Contract:  (sum-sqrs lon) --> number
+;;Input:     lon, a list of numbers 
+;;Output:    The sum of the squares of elements in lon, a number
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+; Pre-function tests:
+(check-expect (sum-sqrs '(1 2 3 4 5)) 55)
+(check-expect (sum-sqrs empty) 0)
+(check-expect (sum-sqrs '(1 2 1 2 1)) 11)
+(check-expect (sum-sqrs '(4 6)) (+ 16 36))
+
+;
+(define sum-sqrs
+  (lambda (numlst)
+  ; first, define a local list called sqrdlst that is the result of squaring 
+  ; every item in numlst, using map
+  (letrec ((sqrdlst (map (lambda (x) (* x x)) numlst))
+        
+          ; second, define a local function to do recursion over the squared
+          ; list and add all the squared elements
+           (sum-all
+            (lambda (listy)
+              (cond
+                [(empty? listy) 0]
+                ; third, call the local recursive function, passing in the
+                ; squared numbers
+                [else (+ (first listy) (sum-all (rest listy)))]))))
+    (sum-all sqrdlst))))
+
+     
+
+(printf "(sum-sqrs '(4 6)) should be ~a and is ~a\n"
+        (+ 16 36)
+        (sum-sqrs '(4 6)))
+
+
+;                                                          
+;                                                          
+;               ;    ;    ; ;                              
+;               ; ;       ;        ;                       
+;               ; ;       ;        ;                       
+;  ; ;  ;  ;  ; ; ;; ;    ; ;  ;;  ;;    ; ;  ;  ;;;  ; ;  
+;  ;; ;; ; ;  ; ; ;  ;    ; ; ;  ; ;     ;; ;; ;    ; ;; ; 
+;  ;  ;  ; ;  ; ; ;  ; ;;;; ;  ;   ;     ;  ;  ;  ;;; ;  ; 
+;  ;  ;  ; ;  ; ; ;  ;    ; ;   ;  ;     ;  ;  ; ;  ; ;  ; 
+;  ;  ;  ; ; ;; ; ;  ;    ; ; ;  ; ;     ;  ;  ; ;  ; ;; ; 
+;  ;  ;  ;  ; ; ; ;; ;    ; ;  ;;  ;;    ;  ;  ;  ;;; ; ;  
+;                                                     ;    
+;                                                     ;    
+;                                                          
+
+;  
+;  Map can also be applied to any number of equal-length lists as shown  
+;  below, on the condition that the operator that is the first argument to
+;  map takes a number of arguments equal to the number of lists:
+;  
+
+(check-expect (map + (list 1 2 3) (list 4 5 6) (list 7 8 9))
+              (list (+ 1 4 7) (+ 2 5 8) (+ 3 6 9)))
+
+(check-expect (map * (list 1 2) (list 4 5) (list 10 11))   
+              (list (* 1 4 10)(* 2 5 11)))
+
+(check-expect (map > (list 1 4 8 12) (list 2 3 2 10) (list 3 2 5 5)) 
+              '(#f #t #f #t))   
+               
+
+
+
+; 
+;  The problem with the sum-sqrs function we wrote using map above
+;  is that, although we can use the map function to shorten the
+;  recursive case, we still have to use recursion to get the sum.
+;
+;  Another higher order function to the rescue!
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  There are higher-order functions that can be used to make the sum-sqrs
+;  function shorter.  One of these is called APPLY.  The apply function
+;  consumes a function and a list and returns the result of applying the
+;  function to all the items in the list to produce one value (not a list).
+;
+;                                            
+;                                            
+;                                            
+;                                            
+;                                            
+;                                            
+;                               ;            
+;                               ;            
+;     ;;;;     ;;;;     ;;;;    ;            
+;    ;; ;;   ;;;;;;;  ;;;;;;;   ;            
+;   ;;   ;  ;;     ;;;;     ;;  ;         ;; 
+;   ;    ;     ;   ;;   ;   ;;  ;   ;     ;; 
+;        ;     ;;  ;    ;;  ;   ;   ;;    ;; 
+;    ;;;;;     ;; ;;    ;; ;;   ;;  ;;   ;;; 
+;    ;; ;;     ;;;;     ;;;;    ;;   ;  ;;;; 
+;   ;;  ;;;   ;;;      ;;;      ;;   ;;;;; ; 
+;   ;  ;;;;    ;;       ;;       ;    ;;   ; 
+;   ;;;;;      ;;       ;;       ;         ; 
+;              ;;       ;;       ;         ; 
+;              ;;       ;;                 ; 
+;              ;;       ;;                ;; 
+;                                        ;;  
+;                                        ;;  
+;                                      ;;;   
+;                                      ;;    
+;                                            
+;                            
+;  
+;          (apply + (list 3 4 5 6 7)) ;=> (+ 3 4 5 6 7)
+;  
+;  The apply function always produces a single element from a list.
+;  
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Contract:  (sum-sqrs-v2 numlst) -> number
+Input:     numlst is a LON
+Output:    produce the sum of the square of each element in numlst
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+; Pre-function tests:
+(check-expect (sum-sqrs-v2 '(1 2 3 4 5)) 55)
+(check-expect (sum-sqrs-v2 '()) 0)
+(check-expect (sum-sqrs-v2 '(1 1 1 1 1)) 5)
+
+; Function definition:
+(define sum-sqrs-v2
+  (lambda (numlst)
+  ;; add all numbers after they are squared by map function
+    (apply + (map (lambda (x) (* x x)) numlst))))
+ 
+(printf "(sum-sqrs-v2 '(1 2 3 4 5)) should be ~a and is ~a\n"
+        55
+        (sum-sqrs-v2 '(1 2 3 4 5)))
+
+;; Functions foldl and foldr work like apply.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  There is a built-in function called BUILD-LIST that takes a number
+;  n and a one-parameter function and returns a list of length n in which
+;  the function has been applied to every number from 0 to n-1.
+;  
+;                                                                              
+;                                                                              
+;                                                                              
+;                                                                              
+;                                                                              
+;   ;                                ;;                                        
+;   ;                        ;       ;;             ;                          
+;   ;                 ;;;;   ;       ;;             ;   ;;;;            ;;     
+;   ;                 ;;;    ;       ;;             ;   ;;;     ;;;     ;;     
+;   ; ;;;                    ;        ;             ;          ;;;;;    ;;     
+;   ;;;;;;   ;    ;          ;     ;;;;             ;         ;;  ;;    ;;     
+;   ;;;  ;  ;;   ;;     ;    ;    ;;; ;;            ;     ;   ;;        ;;     
+;   ;;   ;  ;;   ;;    ;;    ;   ;;   ;;  ;;;;;;;   ;    ;;   ;;     ;;;;;;;;  
+;   ;;   ;  ;;   ;;    ;;    ;;  ;;   ;;  ;;;;      ;;   ;;    ;;;    ; ;;     
+;   ;;  ;   ;;  ;;;;    ;    ;;  ;;   ;;            ;;    ;      ;;     ;;     
+;    ;;;;   ;; ;; ;;    ;    ;;  ;;;  ;;            ;;    ;       ;;    ;;    ;
+;    ;;;    ;;;;  ;;    ;;    ;   ;;;;;;             ;    ;;       ;;   ;;  ;;;
+;   ;;       ;;    ;     ;    ;        ;             ;     ;      ;;;   ;;;;;; 
+;                             ;                      ;        ;;;;;;     ;;;   
+;                                                             ;;;;             
+ 
+
+
+(check-expect (build-list 5 (lambda (x) x)) '(0 1 2 3 4))
+
+(check-expect (build-list 5 add1) '(1 2 3 4 5))
+
+(display "
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ Contract: (genran num) -> list of numbers
+ Input:    num is an integer
+ Purpose:  generate a list of num numbers between 1 and 100
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+\n\n")
+
+;Function definition:
+(define genran
+  (lambda (num)
+    ; use build-list to feed every number from 0 to num-1 into unnamed lambda,
+    ; resulting in num random numbers, each between 1 and 100
+    (build-list num (lambda (x) (+ 1 (random 100))))))
+     
+ 
+
+(printf "(genran 20)-> ~%")
+(genran 20 )
+(newline)(newline)
+
+;; Another higher-order function is andmap. This function consumes a
+;; list and a predicate function and produces #t only if the function
+;; is true for all items on the list:
+
+;(check-expect (andmap symbol? '(a b c d e)) #t)
+;(check-expect (andmap number? '(a b c d e)) #f)
+;(check-expect (andmap symbol? '(a b 1 d e)) #f)
+
+;; Another higher-order function is oemap. This function consumes a
+;; list and a predicate function and produces #f only if the function
+;; is false for all items on the list:
+
+;(check-expect (ormap symbol? '(a b c d e)) #t)
+;(check-expect (ormap number? '(a b c d e)) #f)
+;(check-expect (ormap symbol? '(a b 1 d e)) #t)
+
+;; The sort function is a higher-order function that consumes a list
+;; of comparable items and a relational operator and produces a list
+;; sorted according to the relational operator.
+
+;(check-expect (sort '(4 3 4 7 1 2 3) <) '(1 2 3 3 4 4 7))
+;(check-expect (sort '(4 3 4 7 1 2 3) >) '(7 4 4 3 3 2 1))
+;(check-expect (sort '("cat" "ant" "bee") string<?) '("ant" "bee" "cat")) 
+;
+;(sort (map first '(("aardvark") ("dingo") ("cow") ("bear")))
+;      string<=?)
+;(andmap  number? '(1 2 3 4 5))
+;(ormap number? '(a b c d))
+
+
+(newline)
+(newline)
+(test)
